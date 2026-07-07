@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>HashQuiz — Practice Smarter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1F2937;
+    --secondary:#6B7280;
+    --paper:#F8F5F0;
+    --rule:#E5E1D6;
+    --header-blue:#1E3A8A;
+    --primary:#10B981;
+    --primary-dark:#0ea371;
+    --gold:#D4AF37;
+    --card:#FFFFFF;
+    --wrong:#DC2626;
+    --right:#10B981;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',Helvetica,Arial,sans-serif;
+    line-height:1.5;
+  }
+  header{
+    padding:22px 20px 20px;
+    background:var(--header-blue);
+    text-align:center;
+  }
+  header h1{
+    margin:0;
+    font-size:1.6rem;
+    font-weight:800;
+    color:#fff;
+    letter-spacing:0.01em;
+  }
+  header .byline{
+    color:var(--gold);
+    font-size:0.8rem;
+    font-weight:600;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    margin-top:2px;
+  }
+  header .tagline{
+    margin:10px 0 4px;
+    font-size:0.95rem;
+    color:#eef2ff;
+    font-weight:500;
+  }
+  header p{
+    margin:0;
+    font-size:0.78rem;
+    color:#c7d2fe;
+    font-weight:500;
+    letter-spacing:0.06em;
+  }
+  #score-bar{
+    position:sticky;
+    top:0;
+    background:var(--paper);
+    border-bottom:1px solid var(--rule);
+    padding:8px 14px;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:space-between;
+    align-items:center;
+    row-gap:4px;
+    column-gap:10px;
+    font-family:'Inter',Helvetica,Arial,sans-serif;
+    font-size:0.72rem;
+    z-index:5;
+  }
+  #score-bar span{white-space:nowrap;}
+  #score-bar strong{font-size:0.95rem;}
+  main{
+    max-width:720px;
+    margin:0 auto;
+    padding:20px 20px 80px;
+  }
+  .q{
+    margin-bottom:26px;
+    padding-bottom:18px;
+    border-bottom:1px solid var(--rule);
+  }
+  .q-unit{
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:0.68rem;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    color:var(--header-blue);
+    margin-bottom:4px;
+  }
+  .q-text{
+    font-weight:bold;
+    margin-bottom:10px;
+  }
+  .opt{
+    display:block;
+    padding:8px 10px;
+    margin:6px 0;
+    border:1px solid var(--rule);
+    border-radius:8px;
+    cursor:pointer;
+    background:var(--card);
+    transition:background .15s;
+  }
+  .opt:hover{background:#f3f4f6;}
+  .opt input{margin-right:8px;}
+  .opt.correct{border-color:var(--right);background:#e6f9f1;}
+  .opt.incorrect{border-color:var(--wrong);background:#fdecec;}
+  .explain{
+    display:none;
+    font-family:'Inter',Helvetica,Arial,sans-serif;
+    font-size:0.82rem;
+    color:var(--secondary);
+    margin-top:8px;
+    padding-left:4px;
+    border-left:3px solid var(--rule);
+    padding-left:10px;
+  }
+  #submit-row{
+    text-align:center;
+    margin:30px 0;
+  }
+  button{
+    font-family:'Inter',Helvetica,Arial,sans-serif;
+    font-weight:600;
+    background:var(--primary);
+    color:#fff;
+    border:none;
+    padding:12px 26px;
+    font-size:0.95rem;
+    letter-spacing:0.01em;
+    border-radius:8px;
+    cursor:pointer;
+    transition:background .15s, transform .1s;
+  }
+  button:hover{background:var(--primary-dark);}
+  button:active{transform:scale(0.97);}
+  button.secondary{
+    background:transparent;
+    color:var(--primary);
+    border:1px solid var(--primary);
+    margin-left:10px;
+  }
+  #result{
+    text-align:center;
+    font-family:'Inter',Helvetica,Arial,sans-serif;
+    padding:14px;
+    margin-bottom:10px;
+    display:none;
+  }
+  #timer-display.low{
+    color:var(--wrong);
+    font-weight:bold;
+  }
+  #progress-text{
+    font-family:'Inter',Helvetica,Arial,sans-serif;
+    font-size:0.8rem;
+    color:var(--secondary);
+    text-align:center;
+    margin-bottom:6px;
+  }
+  #progress-bar{
+    height:6px;
+    background:var(--rule);
+    border-radius:3px;
+    overflow:hidden;
+    margin-bottom:22px;
+  }
+  #progress-fill{
+    height:100%;
+    background:var(--header-blue);
+    width:0%;
+    transition:width .2s;
+  }
+  #nav-row{
+    display:flex;
+    justify-content:space-between;
+    margin-top:20px;
+  }
+  button:disabled{
+    opacity:0.4;
+    cursor:default;
+  }
+  #course-screen{
+    max-width:640px;
+    margin:0 auto;
+    padding:30px 20px 60px;
+  }
+  #course-screen h2{
+    font-size:1.15rem;
+    font-weight:700;
+    margin-bottom:4px;
+  }
+  #course-screen .sub{
+    font-family:'Inter',Helvetica,Arial,sans-serif;
+    font-size:0.85rem;
+    color:var(--secondary);
+    margin-bottom:24px;
+  }
+  .course-card{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:16px 18px;
+    margin-bottom:12px;
+    border:1px solid var(--rule);
+    border-radius:10px;
+    background:var(--card);
+    cursor:pointer;
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  .course-card.open:hover{
+    transform:scale(1.02);
+    box-shadow:0 0 0 3px rgba(16,185,129,0.25), 0 8px 20px rgba(16,185,129,0.15);
+    border-color:var(--primary);
+  }
+  .course-card.open:active{
+    transform:scale(1.03);
+    box-shadow:0 0 0 4px rgba(16,185,129,0.35), 0 10px 24px rgba(16,185,129,0.22);
+    border-color:var(--primary);
+  }
+  .course-card.locked{
+    cursor:default;
+    opacity:0.6;
+  }
+  .course-card .code{
+    font-weight:700;
+    font-size:1rem;
+  }
+  .course-card .status{
+    font-family:'Inter',Helvetica,Arial,sans-serif;
+    font-size:0.75rem;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+  }
+  .course-card.open .status{color:var(--right);}
+  .course-card.locked .status{color:var(--wrong);}
+  #locked-msg{
+    display:none;
+    font-family:'Inter',Helvetica,Arial,sans-serif;
+    font-size:0.85rem;
+    color:var(--wrong);
+    text-align:center;
+    margin-top:14px;
+  }
+  #change-course-row{
+    text-align:center;
+    margin-bottom:10px;
+  }
+  #active-course-label{
+    display:block;
+    font-weight:700;
+    color:var(--header-blue);
+    font-size:0.85rem;
+    margin-bottom:6px;
+    letter-spacing:0.04em;
+  }
+  #change-course-btn{
+    background:transparent;
+    color:var(--header-blue);
+    border:1px solid var(--header-blue);
+    padding:6px 14px;
+    font-size:0.8rem;
+  }
+  footer{
+    text-align:center;
+    padding:18px 20px 26px;
+    font-size:0.78rem;
+    color:var(--secondary);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1 id="page-title">🎓 HashQuiz</h1>
+  <div class="byline">by Hash</div>
+  <div class="tagline">Practice smarter.</div>
+  <p id="page-sub">20 Questions • 10 Minutes • Instant Result</p>
+</header>
+
+<div id="course-screen">
+  <h2>Choose a course</h2>
+  <div class="sub">20 random questions per session · 10-minute timer · auto-graded</div>
+  <div id="course-list"></div>
+  <div id="locked-msg">This course isn't unlocked yet. The material hasn't been sent for it.</div>
+</div>
+
+<div id="quiz-screen" style="display:none;">
+
+  <div id="score-bar">
+    <span>Ans: <strong id="answered-count">0</strong>/<span id="total-count">0</span></span>
+    <span id="timer-display">⏱ <strong id="timer-value">10:00</strong></span>
+    <span>Score: <strong id="live-score">—</strong></span>
+  </div>
+
+  <main>
+    <div id="change-course-row">
+      <span id="active-course-label"></span>
+      <button type="button" id="change-course-btn">Change course</button>
+    </div>
+    <div id="result"></div>
+    <div id="progress-text"></div>
+    <div id="progress-bar"><div id="progress-fill"></div></div>
+    <form id="quiz-form"></form>
+    <div id="nav-row">
+      <button type="button" id="prev-btn" class="secondary">Previous</button>
+      <button type="button" id="submit-mid-btn" class="secondary">Submit now</button>
+      <button type="button" id="next-btn">Next</button>
+    </div>
+    <div id="submit-row" style="display:none;">
+      <button type="button" id="reset-btn" class="secondary">Try again (same course)</button>
+    </div>
+  </main>
+
+</div>
+
+<footer>© 2026 Hash. All rights reserved.</footer>
+
+<script>
+const EDT118_QUESTIONS = [
+// ===== UNIT 1 =====
+{unit:"Unit 1", q:"Which term describes the systematic, long-term transfer of knowledge/skills from one who knows to one who doesn't?", options:["Teaching","Training","Instruction","Facilitation"], answer:1},
+{unit:"Unit 1", q:"Instruction, compared to teaching, is best described as:", options:["Narrower and only about ethics","Broader — includes both teaching and classroom management","Identical to training","Only concerned with spiritual development"], answer:1},
+{unit:"Unit 1", q:"Since the 1980s, the view of teaching as guiding learners to build their own knowledge reflects which approach?", options:["Behaviourism","Constructivism","Instructionism","Programmed learning"], answer:1},
+{unit:"Unit 1", q:"'Vertical teaching' refers to:", options:["Covering many topics briefly","Going deep into one topic with higher-order thinking","Teaching only standing up","Teaching in strict yearly plans"], answer:1},
+{unit:"Unit 1", q:"Which learner factor refers to positive or negative response tendency toward a subject?", options:["Intelligence","Attitude","Motivation","Cognitive style"], answer:1},
+{unit:"Unit 1", q:"A learner-centered approach is characterized by all EXCEPT:", options:["Cooperative determination of subject matter","Emphasis on skills","Teacher-controlled uniform strategies","Emphasis on indirect strategies"], answer:2},
+{unit:"Unit 1", q:"Which school of thought defines learning strictly as observable stimulus-response reinforcement?", options:["Cognitivist","Constructivist","Behaviourist","Humanist"], answer:2},
+{unit:"Unit 1", q:"The three stages of skill development, in order, are:", options:["Automated → Associative → Cognitive","Cognitive → Associative → Automated","Associative → Cognitive → Automated","Cognitive → Automated → Associative"], answer:1},
+{unit:"Unit 1", q:"The three dimensions of attitude are cognitive, affective, and:", options:["Conative/behavioural","Sensory","Reflective","Instructional"], answer:0},
+{unit:"Unit 1", q:"Learning where a person copies a role model's behaviour is called:", options:["Observation","Imitation","Reflection","Experimentation"], answer:1},
+{unit:"Unit 1", q:"Learning through testing several options until the right one is found is known as:", options:["Trial and error","Instruction","Imitation","Experimentation"], answer:0},
+{unit:"Unit 1", q:"Training mainly focuses on:", options:["Spiritual growth","Preparing someone to do a job","Emotional development","Social values"], answer:1},
+{unit:"Unit 1", q:"A question the teacher asks the whole class is an act of:", options:["Classroom management","Teaching","Training","Evaluation only"], answer:1},
+{unit:"Unit 1", q:"Restricting an answer to one student to avoid confusion is part of:", options:["Teaching","Classroom management","Training","Instruction only"], answer:1},
+{unit:"Unit 1", q:"Teaching that promotes changes in the cognitive, psycho-motor, and affective domains of learners is called:", options:["A static process","A process of promoting change in learners","A form of training only","Passive listening"], answer:1},
+{unit:"Unit 1", q:"In direct teaching methods like lecture and demonstration, students are mostly:", options:["Active participants","Passive","Group leaders","Evaluators"], answer:1},
+{unit:"Unit 1", q:"During pre-instructional tasks, teachers must decide all of these EXCEPT:", options:["Grouping of students","Objectives of the activity","Evaluation procedures","The final exam date for the semester"], answer:3},
+{unit:"Unit 1", q:"Stimulus variation in teaching mainly helps to:", options:["Bore the students","Prevent boredom and sustain attention","Reduce interaction","Remove media use"], answer:1},
+{unit:"Unit 1", q:"Which of these is NOT a learner factor affecting learning?", options:["Intelligence","Motivation","Classroom paint color","Attitude"], answer:2},
+{unit:"Unit 1", q:"The cognitivist school of thought sees learning as:", options:["Pure stimulus-response","Acquisition, assimilation, and accommodation of knowledge","Random guessing","Only physical skill building"], answer:1},
+{unit:"Unit 1", q:"The constructivist school of thought sees learning as:", options:["Construction of knowledge from experience and prior knowledge","Passive reception of facts","Pure reflex response","Memorizing textbooks only"], answer:0},
+{unit:"Unit 1", q:"Learning is best defined as:", options:["A temporary change in mood","A relatively permanent change in potential behaviour due to experience","A fixed, unchangeable trait","A skill only, not knowledge or attitude"], answer:1},
+{unit:"Unit 1", q:"Which is NOT one of the three core aspects of learning?", options:["Relatively permanent change","Change in potential, not just performance","Result of experience","Result of genetics alone"], answer:3},
+{unit:"Unit 1", q:"Learning outcomes, according to the nature of learning, can be:", options:["Only desirable","Only undesirable","Both desirable and undesirable","Neither desirable nor undesirable"], answer:2},
+{unit:"Unit 1", q:"In skill development, the stage where individual steps combine into larger units is the:", options:["Cognitive stage","Associative stage","Automated stage","Reflective stage"], answer:1},
+{unit:"Unit 1", q:"In the automated stage of skill learning, brain processing shifts from:", options:["Reflexive to reflective","Reflective to reflexive","Passive to active only","Verbal to nonverbal only"], answer:1},
+{unit:"Unit 1", q:"A positive learning climate is associated with the release of:", options:["Cortisol","Endorphins","Adrenaline only","No chemical change"], answer:1},
+{unit:"Unit 1", q:"A stressed, negative learning climate is linked to the release of:", options:["Endorphins","Cortisol","Dopamine only","Melatonin"], answer:1},
+{unit:"Unit 1", q:"Learning through watching chimpanzees in their natural habitat is an example of:", options:["Imitation","Observation","Trial and error","Instruction"], answer:1},
+{unit:"Unit 1", q:"Instruction, as one of the ways children learn, mainly involves developing:", options:["Physical/practical skills through demonstration","Spiritual growth","Moral values only","Attitudes only"], answer:0},
+{unit:"Unit 1", q:"Reflection as a way of learning is best contrasted with:", options:["Being imitative","Being impulsive","Being observant","Being experimental"], answer:1},
+{unit:"Unit 1", q:"Experimentation as a way of learning is useful when:", options:["Intuition and guessing are unreliable","No teacher is present","Learners refuse to think","Only rote memorization is needed"], answer:0},
+{unit:"Unit 1", q:"Involving students in goal-setting tends to:", options:["Decrease their commitment","Increase their commitment to goal-directed activities","Have no effect on motivation","Only work for advanced learners"], answer:1},
+{unit:"Unit 1", q:"According to the notes, dependence in the classroom tends to breed:", options:["Cooperation","Hostility","Confidence","Curiosity"], answer:1},
+{unit:"Unit 1", q:"Intelligence is most closely linked with the capacity to:", options:["Memorize without understanding","Think, reason logically, and solve problems","Avoid all challenges","Copy others exactly"], answer:1},
+
+// ===== UNIT 2 =====
+{unit:"Unit 2", q:"According to Thornton (2013), the teaching style where learners are given independent assignments and authority to decide how to work is:", options:["Directing style","Discussing style","Delegating style","Programmed style"], answer:2},
+{unit:"Unit 2", q:"The 'Triple C' of a good teaching style stands for:", options:["Clarity, Conciseness, Comprehensiveness","Care, Consistency, Competence","Content, Context, Communication","Clarity, Confidence, Control"], answer:0},
+{unit:"Unit 2", q:"Who defined teaching models as 'prescriptive teaching strategies designed to accomplish particular instructional goals'?", options:["B.F. Skinner","Paul D. Eggen","John Dewey","Carl Rogers"], answer:1},
+{unit:"Unit 2", q:"The Non-directive teaching model, based on human relations, was proposed by:", options:["Carl Rogers","William Gordon","Fritz Pauls","Byron"], answer:0},
+{unit:"Unit 2", q:"The Programmed/CAI teaching model (computer-assisted instruction) was first given by:", options:["Gagné","B.F. Skinner","Bruner","Kilpatrick"], answer:1},
+{unit:"Unit 2", q:"'The soul of the learning of science is exploration' is associated with which method?", options:["Lecture method","Heuristic/Discovery method","Demonstrative method","Project method"], answer:1},
+{unit:"Unit 2", q:"The Project Method, defined as 'a wholehearted purposeful activity proceeding in a social environment,' was given by:", options:["Kilpatrick","Ausubel","Gagné","Ausbel"], answer:0},
+{unit:"Unit 2", q:"Moving from specific facts to a general conclusion describes the:", options:["Deductive method","Inductive method","Analytic method","Synthetic method"], answer:1},
+{unit:"Unit 2", q:"According to Jackson, verbal stimulation, explanation, questioning, and providing guidance happen mainly during the:", options:["Pre-active phase","Interactive phase","Post-active phase","Evaluation phase"], answer:1},
+{unit:"Unit 2", q:"The maxim 'teaching should move from what learners already know to new content' reflects:", options:["Simple to complex","Known to unknown","Whole to part","Indefinite to definite"], answer:1},
+{unit:"Unit 2", q:"In the Hokanson & Hooper levels of teaching, the level where the learner is able to solve problems independently is:", options:["Reception","Application","Extension","Creation"], answer:3},
+{unit:"Unit 2", q:"According to the Oxford Dictionary meaning quoted in the notes, teaching means to:", options:["Impart knowledge or skill, give instruction or lessons, instill and inspire with","Only assess students","Only manage classroom discipline","Only design curriculum"], answer:0},
+{unit:"Unit 2", q:"Teaching is described as a 'practical art' because it:", options:["Aims purely at creating beauty","Requires improvisation, spontaneity, and style that computers fall behind on","Never requires any skill","Is identical to fine art"], answer:1},
+{unit:"Unit 2", q:"Teaching is called 'goal-oriented' because it is:", options:["Directed toward achieving educational objectives","Random and without purpose","Only for entertainment","Never evaluated"], answer:0},
+{unit:"Unit 2", q:"Teaching being 'dynamic' means it:", options:["Never changes over time","Changes with time, technology, learner needs, and society","Is fixed by law","Only applies to online classes"], answer:1},
+{unit:"Unit 2", q:"Teaching being 'professional' implies it requires:", options:["No training at all","Specialized training, ethics, certification, and continuous development","Only natural talent","A university degree in any field"], answer:1},
+{unit:"Unit 2", q:"In the discussing teaching style, the teacher mainly acts as a:", options:["Strict instructor","Facilitator encouraging critical thinking and discussion","Silent observer only","Grader of assignments only"], answer:1},
+{unit:"Unit 2", q:"The directing style of teaching is described as:", options:["Almost traditional, instruction-based teaching","Fully learner-controlled","Based only on group projects","Focused only on assessment"], answer:0},
+{unit:"Unit 2", q:"Among the fundamentals of a teaching model, 'Syntax' refers to:", options:["The grammar used by the teacher","The sequential organization of the model's dimensions","The social system created","The support materials used"], answer:1},
+{unit:"Unit 2", q:"The 'Support System' fundamental of a teaching model means the model should:", options:["Replace regular teaching entirely","Supplement regular teaching to enhance effectiveness","Ignore learner feedback","Avoid using any content"], answer:1},
+{unit:"Unit 2", q:"The Group Investigation model, a Social Interaction Model, was given by John Dewey and:", options:["Herbart Thelim","Byron","Carl Rogers","B.F. Skinner"], answer:0},
+{unit:"Unit 2", q:"The Social Inquiry model was given by Benjamin Cox and:", options:["Byron","Gagné","Bruner","William Gordon"], answer:0},
+{unit:"Unit 2", q:"Gagné's Information Development Model depends mainly on:", options:["Sensory memory, memorization, and practice","Zoomable interfaces","Group investigation only","Punishment"], answer:0},
+{unit:"Unit 2", q:"Bruner's model is based on the idea that:", options:["All objects/events in the environment have relations with each other","Only rewards drive learning","Learning must be non-linear on a canvas","Learners should work alone always"], answer:0},
+{unit:"Unit 2", q:"William Gordon's Creative model is most similar to which teaching style?", options:["Directing style","Discussing style","Delegating style","Lecture style"], answer:2},
+{unit:"Unit 2", q:"In the Demonstrative teaching method, a key drawback is that:", options:["It's too abstract","Learners aren't allowed to handle the equipment","It requires no senses","It cannot be used in science"], answer:1},
+{unit:"Unit 2", q:"In the Lecture-cum-Demonstration method, the teaching style is mostly:", options:["Learner-centered","Teacher-centered","Fully delegated","Purely experimental"], answer:1},
+{unit:"Unit 2", q:"In the Problem Solving method, the correct order of steps is:", options:["Data collection → Problem → Hypothesis → Conclusion","Problem → Hypothesis framing → Data collection → Analysis/Interpretation/Conclusion","Conclusion → Problem → Hypothesis → Data collection","Hypothesis → Conclusion → Problem → Data collection"], answer:1},
+{unit:"Unit 2", q:"Analytic method moves from:", options:["Known to unknown, or conclusion to hypothesis","Unknown to known, or conclusion to hypothesis","Simple to complex only","General to specific only"], answer:1},
+{unit:"Unit 2", q:"Synthetic method proceeds from:", options:["Known to unknown, or hypothesis to conclusion","Unknown to known only","Complex to simple only","General to particular only"], answer:0},
+{unit:"Unit 2", q:"According to the notes, 'analysis insists on discovery' while 'synthesis depends on:'", options:["Memory","Punishment","Reinforcement","Imitation"], answer:0},
+{unit:"Unit 2", q:"During the Pre-active phase of teaching, the teacher primarily:", options:["Evaluates final outcomes","Sets aims, sequences content, and plans strategies","Delivers the lesson live","Records classroom videos"], answer:1},
+{unit:"Unit 2", q:"The Post-active phase of teaching is best described as:", options:["The beginning of the lesson","The winding-up and evaluation phase","A phase with no evaluation","Only for lesson planning"], answer:1},
+{unit:"Unit 2", q:"The maxim 'concrete to abstract' is based on the idea that learners:", options:["Prefer memorizing definitions first","Connect easily to real, physical forms before intangible ideas","Should start with the hardest content","Should skip real-life examples"], answer:1},
+{unit:"Unit 2", q:"The maxim 'whole to part' is based on which theory?", options:["Insight theory","Operant conditioning","Cognitive load theory","Dual coding theory"], answer:0},
+{unit:"Unit 2", q:"At Level-I (Reception) of Hokanson & Hooper's levels of teaching, communication is mainly:", options:["Two-way","One-way, from teacher to learner","Absent entirely","Peer-to-peer only"], answer:1},
+{unit:"Unit 2", q:"At Level-V (Challenge), the learner is described as:", options:["Passive and receiving only","Ready to challenge their own limits with an exploratory attitude","Unable to solve any problems","Only imitating the teacher"], answer:1},
+
+// ===== UNIT 3 =====
+{unit:"Unit 3", q:"In Pavlov's experiment, the sound of the bell before conditioning is the:", options:["Unconditioned Stimulus (US)","Neutral Stimulus (NS)","Conditioned Response (CR)","Unconditioned Response (UR)"], answer:1},
+{unit:"Unit 3", q:"After repeated pairing, the bell alone produces salivation. This salivation is now called the:", options:["Unconditioned Response","Conditioned Response","Neutral Response","Reflex Response"], answer:1},
+{unit:"Unit 3", q:"Operant conditioning was popularized by:", options:["Ivan Pavlov","B.F. Skinner","Jean Piaget","Edward Thorndike"], answer:1},
+{unit:"Unit 3", q:"In Skinner's box experiment, pressing the lever led to food, which strengthened the lever-pressing behaviour. This is called the:", options:["Law of Effect only","Law of Acquisition","Law of Extinction","Law of Readiness"], answer:1},
+{unit:"Unit 3", q:"Removing an unpleasant condition to strengthen a behaviour is an example of:", options:["Positive reinforcement","Negative reinforcement","Punishment","Extinction"], answer:1},
+{unit:"Unit 3", q:"Cognitivism was founded by contributions from Ulric Neisser, Noam Chomsky, and:", options:["B.F. Skinner","Jean Piaget","Ivan Pavlov","John Dewey"], answer:1},
+{unit:"Unit 3", q:"The three stages of the Information Processing Model are Sensory Memory, Working Memory, and:", options:["Long-Term Memory","Procedural Memory","Episodic Memory","Reflective Memory"], answer:0},
+{unit:"Unit 3", q:"Presenting information in both verbal and visual form to improve retention refers to:", options:["Cognitive Load Theory","Dual Coding Theory","Schema Theory","Scaffolding"], answer:1},
+{unit:"Unit 3", q:"Constructivism was initiated primarily by:", options:["Jean Piaget","B.F. Skinner","Ivan Pavlov","Edward Thorndike"], answer:0},
+{unit:"Unit 3", q:"In a constructivist classroom, the teacher's main role is to act as a:", options:["Sole authority delivering facts","Coach and facilitator","Disciplinarian only","Passive observer"], answer:1},
+{unit:"Unit 3", q:"Which is a tenet of constructivism?", options:["Learners should memorize content, not apply it","Learners should pursue their own learning goals","Learning should ignore context","Teachers should set all goals for learners"], answer:1},
+{unit:"Unit 3", q:"A learning theory is best defined as:", options:["A random guess about learners","A set of generalized statements supported by experimental evidence about how people learn","A fixed law with no evidence","A teaching method only"], answer:1},
+{unit:"Unit 3", q:"Behaviorism as a theory was developed based on:", options:["Animal learning experiments","Purely philosophical debate","Classroom surveys only","Software simulations"], answer:0},
+{unit:"Unit 3", q:"The key elements of behaviorism are the stimulus, the response, and:", options:["The teacher's mood","The association between the two","The classroom size","The learner's age only"], answer:1},
+{unit:"Unit 3", q:"In Pavlov's experiment, food is the:", options:["Neutral Stimulus","Conditioned Stimulus","Unconditioned Stimulus","Conditioned Response"], answer:2},
+{unit:"Unit 3", q:"The dog's salivation to food, before any conditioning, is the:", options:["Unconditioned Response","Conditioned Response","Neutral Response","Learned Response"], answer:0},
+{unit:"Unit 3", q:"Pavlov found that a shorter interval between the bell and food led to:", options:["Weaker and slower learning","No learning at all","Stronger and quicker learning","Learning only in some dogs"], answer:2},
+{unit:"Unit 3", q:"Skinner's experiment on operant conditioning used which animal?", options:["Dog","Mouse","Cat","Rabbit"], answer:1},
+{unit:"Unit 3", q:"Verbal reinforcement such as saying 'That is right' or 'Very good' is an example of:", options:["Punishment","Positive reinforcement","Negative reinforcement","Extinction"], answer:1},
+{unit:"Unit 3", q:"The main purpose of punishment, according to the notes, is to:", options:["Strengthen a behaviour","Put an end to an unfavorable behaviour","Reward the learner","Increase motivation directly"], answer:1},
+{unit:"Unit 3", q:"Behavioral theory holds that the teacher's job includes determining which cues can:", options:["Confuse the learner","Elicit the desired response","Punish the learner","Replace the curriculum"], answer:1},
+{unit:"Unit 3", q:"Cognitivism focuses mainly on:", options:["Observable behaviour only","Internal mental processes like perception, memory, and problem-solving","Physical punishment","Random reinforcement"], answer:1},
+{unit:"Unit 3", q:"Schema Theory explains that learners organize information into:", options:["Random piles","Mental frameworks (schemas)","Physical folders only","Audio recordings"], answer:1},
+{unit:"Unit 3", q:"New knowledge is integrated into existing schemas through assimilation or:", options:["Punishment","Accommodation","Extinction","Reinforcement"], answer:1},
+{unit:"Unit 3", q:"Cognitive Load Theory suggests instruction should avoid:", options:["Chunking information","Excessive cognitive overload","All visual aids","Any prior knowledge use"], answer:1},
+{unit:"Unit 3", q:"Scaffolding in cognitivism refers to:", options:["Physical classroom construction","Structured teacher support that reduces over time as learners improve","Punishing wrong answers","Ignoring learner needs"], answer:1},
+{unit:"Unit 3", q:"Cognitivist evaluation emphasizes understanding over:", options:["Application","Rote memorization","Critical thinking","Transfer of knowledge"], answer:1},
+{unit:"Unit 3", q:"Constructivism holds that students:", options:["Transfer knowledge directly from the external world into memory","Build personal interpretations of the world from experience","Learn only through punishment","Cannot construct their own knowledge"], answer:1},
+{unit:"Unit 3", q:"Which theorist besides Piaget contributed to constructivism?", options:["B.F. Skinner","Lev Vygotsky","Ivan Pavlov","Edward Thorndike"], answer:1},
+{unit:"Unit 3", q:"In constructivism, assessment can be done using tests, observation, engagement, communication, and:", options:["Reflection","Punishment records","Reinforcement charts","None of the above"], answer:0},
+{unit:"Unit 3", q:"According to the impact of constructivism on teaching, errors made during learning:", options:["Should be punished immediately","Can have a positive contribution to knowledge construction","Should be ignored completely","Prove the learner is incapable"], answer:1},
+{unit:"Unit 3", q:"Examples of constructivist classroom approaches include microworlds, problem-based learning, and:", options:["Enquiry models and hypermedia","Only lecture and demonstration","Only rote drills","Only punishment schedules"], answer:0},
+
+// ===== UNIT 4 =====
+{unit:"Unit 4", q:"Multimedia learning theory, which argues learners understand better through visual and auditory channels combined, was proposed by:", options:["Richard E. Mayer","Jean Piaget","B.F. Skinner","Paul D. Eggen"], answer:0},
+{unit:"Unit 4", q:"Which multimedia component is best suited for showing invisible/microscopic processes like photosynthesis?", options:["Text","Audio","Animation","Infographic"], answer:2},
+{unit:"Unit 4", q:"A major limitation of multimedia resources in many schools is:", options:["Too little learner engagement","High cost of equipment and connectivity","Lack of visual appeal","Inability to combine media"], answer:1},
+{unit:"Unit 4", q:"In MS PowerPoint, the section showing thumbnails of all slides on the left is the:", options:["Ribbon","Slides Pane","Notes Pane","Task Pane"], answer:1},
+{unit:"Unit 4", q:"The '5-5-5 Rule' in PowerPoint means:", options:["5 slides, 5 minutes, 5 fonts","5 words per line, 5 lines per slide, 5 text-heavy slides in a row","5 images, 5 charts, 5 animations per slide","5 colors, 5 templates, 5 transitions"], answer:1},
+{unit:"Unit 4", q:"Google Slides was introduced by Google in:", options:["2003","2007","2012","1999"], answer:1},
+{unit:"Unit 4", q:"A key limitation of Google Slides is that:", options:["It cannot be shared with others","Real-time collaboration requires internet access","It has no templates","It cannot embed images"], answer:1},
+{unit:"Unit 4", q:"Prezi's most distinctive feature, allowing non-linear, canvas-based presentations, is the:", options:["Slide Master","Zoomable User Interface (ZUI)","Ribbon interface","Presenter View"], answer:1},
+{unit:"Unit 4", q:"Prezi was founded in 2009 by entrepreneurs from which country?", options:["United States","Hungary","Germany","United Kingdom"], answer:1},
+{unit:"Unit 4", q:"Interactive Whiteboards emerged during which period?", options:["Late 1970s","Early 1990s","Early 2000s","2015 onward"], answer:1},
+{unit:"Unit 4", q:"Educational software commonly used with Interactive Whiteboards includes:", options:["Audacity and Vocaroo","SMART Notebook and ActivInspire","PhET and Labster","Prezi and Canva"], answer:1},
+{unit:"Unit 4", q:"Audio Response Systems are grounded partly in which learning theory, which emphasizes learning through interaction and observation?", options:["Behaviourism only","Social Learning Theory","Classical Conditioning only","Trial and Error theory"], answer:1},
+{unit:"Unit 4", q:"A major advantage of Audio Response Systems for shy or reluctant writers is that they:", options:["Eliminate the need for feedback","Allow expression of ideas verbally instead of in writing","Require no internet connection ever","Remove teacher involvement"], answer:1},
+{unit:"Unit 4", q:"Interactive teaching is best defined as:", options:["A teacher-centered lecture approach","A learner-centered approach with two-way communication and active participation","Teaching only through textbooks","Teaching without any technology"], answer:1},
+{unit:"Unit 4", q:"The word 'multimedia' comes from 'multi' (many) and 'media,' meaning:", options:["Machines","Channels or means of communication","Money","Materials only"], answer:1},
+{unit:"Unit 4", q:"Which is NOT listed as a component of multimedia resources?", options:["Text","Graphics and images","Animation","Handwriting analysis"], answer:3},
+{unit:"Unit 4", q:"Interactive components of multimedia, like quizzes and drag-and-drop activities, mainly encourage:", options:["Passive listening","Learner engagement and immediate feedback","Reduced participation","Only teacher talk"], answer:1},
+{unit:"Unit 4", q:"Which is a type of multimedia resource mentioned for virtual experiments?", options:["Educational podcasts","Interactive simulations like PhET and Labster","Infographics","Interactive whiteboards only"], answer:1},
+{unit:"Unit 4", q:"One advantage of multimedia is that it accommodates different learning styles by appealing to:", options:["Only visual learners","Visual, auditory, and kinaesthetic learners","Only auditory learners","No specific learning style"], answer:1},
+{unit:"Unit 4", q:"Excessive multimedia effects like unnecessary animations can cause:", options:["Better retention always","Cognitive overload and distraction","Improved focus in every case","No effect on learning"], answer:1},
+{unit:"Unit 4", q:"A best practice for using multimedia is to:", options:["Use as much multimedia as possible regardless of objectives","Identify instructional objectives before selecting multimedia","Avoid testing equipment beforehand","Ignore learners' age and background"], answer:1},
+{unit:"Unit 4", q:"The Ribbon in MS PowerPoint is located:", options:["At the bottom of the window","At the top, with tabs like Home, Insert, Design","On the far right only","Inside the Notes Pane"], answer:0},
+{unit:"Unit 4", q:"The Slide Master feature in PowerPoint allows users to:", options:["Delete all slides at once","Define overall layout, font styles, and color scheme for the whole presentation","Only add audio","Only export to PDF"], answer:1},
+{unit:"Unit 4", q:"Presenter View in PowerPoint gives access to:", options:["Speaker notes, a timer, and a preview of upcoming slides","Only the current slide with no notes","A blank screen","Only audience comments"], answer:0},
+{unit:"Unit 4", q:"One benefit of PowerPoint is portability, since presentations can be saved as:", options:[".pptx or .pdf","Only .exe files","Only physical printouts","Only .mp3 files"], answer:0},
+{unit:"Unit 4", q:"Google Slides is part of which productivity suite?", options:["Microsoft Office","Google Workspace","Adobe Creative Cloud","Apple iWork"], answer:1},
+{unit:"Unit 4", q:"A defining feature of Google Slides is that files are automatically saved in:", options:["Local hard drive only","Google Drive","A USB flash drive","Email inbox"], answer:1},
+{unit:"Unit 4", q:"Version history in Google Slides is useful mainly for:", options:["Deleting all past edits permanently","Viewing previous versions and tracking collaborator contributions","Formatting fonts only","Blocking other users from editing"], answer:1},
+{unit:"Unit 4", q:"Offline editing in Google Slides means changes made without internet are:", options:["Lost permanently","Synchronized automatically once internet is restored","Saved only as PDF","Not allowed at all"], answer:1},
+{unit:"Unit 4", q:"Compared to dedicated presentation software, Google Slides offers:", options:["More advanced animation capabilities","Fewer sophisticated animation and transition effects","No multimedia support","No template options"], answer:1},
+{unit:"Unit 4", q:"Prezi's approach is based on the principle of:", options:["Sequential slide-based storytelling","Visual storytelling and non-linear presentation","Audio-only delivery","Random slide order with no structure"], answer:1},
+{unit:"Unit 4", q:"A limitation of Prezi is that:", options:["It has no learning curve at all","Some advanced features require paid subscription","It cannot integrate multimedia","It works only offline"], answer:1},
+{unit:"Unit 4", q:"An Interactive Whiteboard (IWB) is best described as:", options:["A plain chalkboard","A touch-sensitive display connected to a computer and projector","A printed poster","A standalone speaker system"], answer:1},
+{unit:"Unit 4", q:"Interactive Whiteboards support constructivist learning theory because they:", options:["Enable passive viewing only","Enable learners to manipulate objects and interact with content", "Remove all learner participation","Focus only on teacher lecture"], answer:1},
+{unit:"Unit 4", q:"A key component of an Interactive Whiteboard system is the interactive pen or:", options:["Stylus","Speaker","Keyboard shortcut","Router"], answer:0},
+{unit:"Unit 4", q:"Multi-touch functionality on Interactive Whiteboards allows:", options:["Only one user at a time","Several students to interact with the board simultaneously","No student interaction","Only teacher access"], answer:1},
+{unit:"Unit 4", q:"A major limitation of Interactive Whiteboards is:", options:["Zero cost","High cost of purchase, installation, and maintenance","No need for electricity","No training required"], answer:1},
+{unit:"Unit 4", q:"An Audio Response System (ARS) mainly enables communication through:", options:["Written text only","Spoken responses, voice recordings, and audio prompts","Silent reading only","Physical gestures only"], answer:1},
+{unit:"Unit 4", q:"Examples of audio processing software mentioned in the notes include Audacity and:", options:["Vocaroo","Photoshop","AutoCAD","Excel"], answer:0},
+{unit:"Unit 4", q:"Asynchronous learning through ARS means learners can:", options:["Only respond at the exact same time as the teacher","Listen to instructions and respond at different times","Never receive feedback","Only use it in person"], answer:1},
+{unit:"Unit 4", q:"ARS improves accessibility mainly for learners who:", options:["Have no challenges at all","Experience visual impairment or writing difficulties","Only prefer silent classrooms","Refuse to participate"], answer:1},
+{unit:"Unit 4", q:"A challenge of ARS is that background noise can:", options:["Improve recording quality","Reduce the quality of recordings","Have no effect at all","Only affect video, not audio"], answer:1}
+];
+
+
+const ECO102_QUESTIONS = [
+{unit:"ECO 102", q:"What is money?", options:["Anything with intrinsic value", "Anything widely accepted as medium of exchange", "Paper currency only", "Gold and silver coins"], answer:1},
+{unit:"ECO 102", q:"Which is the main function of money?", options:["Store of value", "Unit of account", "Medium of exchange", "Wealth indicator"], answer:2},
+{unit:"ECO 102", q:"What does it mean for money to be a store of value?", options:["Money never loses purchasing power", "Money can be saved and used later", "Money increases in value over time", "Money is backed by government"], answer:1},
+{unit:"ECO 102", q:"Which is an example of commodity money?", options:["Paper naira notes", "Digital bank money", "Gold coins", "Credit cards"], answer:2},
+{unit:"ECO 102", q:"What is fiat money?", options:["Money backed by gold", "Money with intrinsic value", "Government-declared money not backed by commodity", "Money used only in trade"], answer:2},
+{unit:"ECO 102", q:"What is money supply?", options:["Government's spending power", "Total amount of money in circulation", "Amount of money in banks only", "Gold reserves"], answer:1},
+{unit:"ECO 102", q:"Why do people hold money for transactions?", options:["To earn interest", "To take advantage of investment opportunities", "To pay for daily goods and services", "To avoid risk"], answer:2},
+{unit:"ECO 102", q:"What is precautionary demand for money?", options:["Money held to meet unexpected expenses", "Money held to speculate", "Money held for business operations", "Money held to avoid taxes"], answer:0},
+{unit:"ECO 102", q:"Why hold money for speculative reasons?", options:["To earn wages", "To take advantage of investment opportunities based on interest rate expectations", "To save for retirement", "To pay taxes"], answer:1},
+{unit:"ECO 102", q:"What happens to interest rates when money supply increases?", options:["Interest rates increase", "Interest rates decrease", "Interest rates stay the same", "Interest rates become unpredictable"], answer:1},
+{unit:"ECO 102", q:"What is velocity of money?", options:["Speed at which prices change", "Number of times money is used in transactions per year", "Amount of money in savings", "Interest rate on savings"], answer:1},
+{unit:"ECO 102", q:"In the equation M × V = P × Q, what does P represent?", options:["Profit", "Price level", "Production capacity", "Personal income"], answer:1},
+{unit:"ECO 102", q:"What causes inflation?", options:["Too little money in circulation", "Excessive money growth relative to output", "High interest rates", "Strong currency"], answer:1},
+{unit:"ECO 102", q:"Which tool can central bank use to increase money supply?", options:["Raise reserve requirements", "Sell government securities", "Raise discount rate", "Buy government securities"], answer:3},
+{unit:"ECO 102", q:"When is expansionary monetary policy used?", options:["During high inflation", "During recession and high unemployment", "When economy overheating", "To prevent asset bubbles"], answer:1},
+{unit:"ECO 102", q:"What is GDP?", options:["Total income of nationals worldwide", "Total value of goods and services produced within a country's borders", "Total exports minus imports", "Total government spending"], answer:1},
+{unit:"ECO 102", q:"What is GNP?", options:["Total value produced within borders", "Total value produced by nationals regardless of location", "Only value of exports", "Government spending"], answer:1},
+{unit:"ECO 102", q:"What is the key difference between GDP and GNP?", options:["GDP is larger", "GDP is location-based, GNP is citizenship-based", "GNP includes illegal activities", "No real difference"], answer:1},
+{unit:"ECO 102", q:"How is NDP calculated?", options:["GDP plus capital depreciation", "GDP minus capital depreciation", "GNP minus taxes", "Income minus consumption"], answer:1},
+{unit:"ECO 102", q:"What is national income?", options:["Income of government only", "Total income earned by all factors of production", "Personal income before taxes", "Government revenue"], answer:1},
+{unit:"ECO 102", q:"National income includes which of these?", options:["Wages, rent, interest, profit", "Only wages", "Only government spending", "Only consumption"], answer:0},
+{unit:"ECO 102", q:"What is per capita income?", options:["Average income per person in population", "Income of richest person", "Government income", "Total national income"], answer:0},
+{unit:"ECO 102", q:"When is GNP greater than GDP?", options:["Always", "When more nationals work abroad than foreigners in country", "Never", "When government spending increases"], answer:1},
+{unit:"ECO 102", q:"What is personal income?", options:["Income after all taxes", "Income before direct taxes", "Only wage income", "Government transfers only"], answer:1},
+{unit:"ECO 102", q:"What is disposable income?", options:["Income earned", "Income after direct taxes", "Savings only", "Government assistance"], answer:1},
+{unit:"ECO 102", q:"How is DI calculated from PI?", options:["DI = PI + Taxes", "DI = PI - Taxes", "DI = PI × Taxes", "DI = PI / Taxes"], answer:1},
+{unit:"ECO 102", q:"What can people do with disposable income?", options:["Only save it", "Only spend it", "Consume or save it", "Give to government"], answer:2},
+{unit:"ECO 102", q:"What better measures standard of living than just income?", options:["GDP only", "Total population", "HDI, Gini coefficient, life expectancy", "Government policies"], answer:2},
+{unit:"ECO 102", q:"What is real income?", options:["Income adjusted for inflation", "Actual amount earned", "Income before taxes", "Income in foreign currency"], answer:0},
+{unit:"ECO 102", q:"What problem exists with using average income?", options:["It's too high", "It doesn't show inequality", "It's always accurate", "Everyone earns same"], answer:1},
+{unit:"ECO 102", q:"Is saving a stock or flow?", options:["Stock", "Flow", "Both equally", "Neither"], answer:1},
+{unit:"ECO 102", q:"What is Average Propensity to Consume?", options:["Total consumption", "Portion of income spent on consumption", "All income spent", "Investment only"], answer:1},
+{unit:"ECO 102", q:"What is Average Propensity to Save?", options:["Total savings", "Portion of income saved", "Money in bank", "Investment return"], answer:1},
+{unit:"ECO 102", q:"What is APC + APS equal to?", options:["0", "2", "1", "Varies by income"], answer:2},
+{unit:"ECO 102", q:"Why does APC + APS always equal 1?", options:["Government requires it", "All income is consumed or saved, nothing else", "Banks set it", "Random occurrence"], answer:1},
+{unit:"ECO 102", q:"How do lower interest rates affect investment?", options:["Decrease investment", "Increase investment", "No effect", "Only affect savings"], answer:1},
+{unit:"ECO 102", q:"When firms are optimistic about future, what happens?", options:["They invest less", "They invest more", "No change", "They save instead"], answer:1},
+{unit:"ECO 102", q:"How do higher expected profits affect investment?", options:["Reduce investment", "Increase investment", "No effect", "Encourage saving"], answer:1},
+{unit:"ECO 102", q:"What does new technology do to investment?", options:["Decreases it", "Increases it (firms need to invest to stay competitive)", "Stops it", "No effect"], answer:1},
+{unit:"ECO 102", q:"How do tax breaks for investment affect investment?", options:["Reduce investment", "Increase investment", "No effect", "Move investment abroad"], answer:1},
+{unit:"ECO 102", q:"When firms have excess capacity, what happens to investment?", options:["Increases significantly", "Decreases (less need for new capital)", "Stays same", "Goes negative"], answer:1},
+{unit:"ECO 102", q:"What is capital stock?", options:["Value of stocks owned", "Total amount of physical capital in economy", "Investment per year", "Government spending"], answer:1},
+{unit:"ECO 102", q:"What is accelerator effect in investment?", options:["Higher interest rates accelerate spending", "Rising output increases need for capital (investment)", "Acceleration of cars", "Speed of money circulation"], answer:1},
+{unit:"ECO 102", q:"How do business-friendly policies affect investment?", options:["Decrease investment", "Increase investment", "No effect", "Only affect consumption"], answer:1},
+{unit:"ECO 102", q:"When inflation is expected to rise, firms likely:", options:["Delay investment", "Invest now (before prices rise)", "Stop investing", "Invest in foreign countries"], answer:1},
+{unit:"ECO 102", q:"What problem does GDP have with non-market activities?", options:["Counts them twice", "Doesn't count them (housework, volunteering)", "Counts them correctly", "Overestimates them"], answer:1},
+{unit:"ECO 102", q:"What is double counting problem?", options:["Counting same product at different stages", "Counting each transaction twice", "Counting exports and imports", "Government counting twice"], answer:0},
+{unit:"ECO 102", q:"How does GDP handle illegal market activities?", options:["Includes them", "Excludes them", "Counts half of them", "Government estimates them"], answer:1},
+{unit:"ECO 102", q:"What problem does GDP have with environment?", options:["Counts it correctly", "Counts resource extraction as income but doesn't subtract environmental costs", "Ignores all environmental issues", "Underestimates environment value"], answer:1},
+{unit:"ECO 102", q:"What doesn't GDP measure?", options:["Economic activity", "Production value", "Quality of life, health, happiness", "Exports"], answer:2},
+{unit:"ECO 102", q:"What problem exists with GDP regarding distribution?", options:["Shows exact distribution", "Shows average but not how divided among people", "Only counts rich", "Only counts poor"], answer:1},
+{unit:"ECO 102", q:"How does GDP handle leisure time?", options:["Values it correctly", "Counts it as negative (less work = lower GDP even though more free time)", "Ignores it", "Overvalues it"], answer:1},
+{unit:"ECO 102", q:"What are transfer payments in context of GDP?", options:["Payments for goods", "Payments for services", "Payments like pensions, welfare (not counted in GDP but people spend them)", "Government spending"], answer:2},
+{unit:"ECO 102", q:"What problem exists with nominal GDP?", options:["Too accurate", "Can increase just from price rises, not actual production increase", "Doesn't measure production", "Always reliable"], answer:1},
+{unit:"ECO 102", q:"How are government services (police, education) valued in GDP?", options:["Not valued", "At their cost (what government spent)", "At market price", "Not possible"], answer:1},
+{unit:"ECO 102", q:"What problem exists with owner-occupied housing in GDP?", options:["Not counted", "Value imputed (estimated), not based on actual transaction", "Counted twice", "Ignored completely"], answer:1},
+{unit:"ECO 102", q:"How is double counting problem solved?", options:["Count each transaction", "Count only final goods/services or value added at each stage", "Don't count manufacturing", "Only count exports"], answer:1},
+{unit:"ECO 102", q:"What percentage of some economies is black market?", options:["0%", "5%", "20-40%", "100%"], answer:2},
+{unit:"ECO 102", q:"Which is better measure of development than GDP?", options:["Money supply", "Population", "HDI (Human Development Index)", "Inflation rate"], answer:2},
+{unit:"ECO 102", q:"What does ANNI do?", options:["Increases GDP", "GDP minus environmental damage and resource depletion", "Adds services", "Same as GDP"], answer:1},
+{unit:"ECO 102", q:"Which is a stock?", options:["Saving per month", "Income per year", "Wealth at a point in time", "Consumption per quarter"], answer:2},
+{unit:"ECO 102", q:"Is saving a stock or flow?", options:["Stock", "Flow", "Both", "Neither"], answer:1},
+{unit:"ECO 102", q:"What does acceptability mean for money?", options:["Bank accepts it", "Widely accepted as payment", "Government accepts it", "Rare and valuable"], answer:1},
+{unit:"ECO 102", q:"Why is portability important for money?", options:["Heavy objects valuable", "Must be easy to carry and transport", "Government requirement", "Historical reason"], answer:1},
+{unit:"ECO 102", q:"What does divisibility mean for money?", options:["Money divides people", "Can be divided into smaller units without loss of value", "Banks divide deposits", "Hard to divide"], answer:1},
+{unit:"ECO 102", q:"Why must money be scarce?", options:["Make rich people richer", "Maintain value", "Government requirement", "Historical accident"], answer:1},
+{unit:"ECO 102", q:"What does durability mean for money?", options:["Money must last long", "Withstands use without deteriorating", "Can't be worn out", "Never gets old"], answer:1},
+{unit:"ECO 102", q:"What is fungibility?", options:["Money can be shaped", "All units identical and interchangeable", "Money flows freely", "Makes things possible"], answer:1},
+{unit:"ECO 102", q:"Why is recognizability important?", options:["Looks nice", "Prevents counterfeiting and fraud", "Government likes it", "Historical reason"], answer:1},
+{unit:"ECO 102", q:"Which characteristic does gold NOT have well?", options:["Durability", "Scarcity", "Portability (hard to carry large amounts)", "Fungibility"], answer:2},
+{unit:"ECO 102", q:"What is representative money?", options:["Paper with pictures", "Paper certificates backed by commodity (like gold)", "Modern currency", "Barter system"], answer:1},
+{unit:"ECO 102", q:"What is M1 money supply?", options:["All money in country", "Cash and checking accounts (highly liquid)", "Savings accounts", "Investments"], answer:1},
+{unit:"ECO 102", q:"What is M2?", options:["M1 only", "M1 plus savings accounts and other liquid assets", "Government money", "Foreign currency"], answer:1},
+{unit:"ECO 102", q:"How does higher interest rate affect money demand?", options:["Increases it", "Decreases it (people prefer bonds)", "No effect", "Unpredictable"], answer:1},
+{unit:"ECO 102", q:"What is deflation?", options:["Decrease in money supply", "Decrease in general price level", "Economic recession", "Currency weakness"], answer:1},
+{unit:"ECO 102", q:"What does hyperinflation do?", options:["Helps savers", "Encourages borrowing", "Makes money worthless", "Increases savings"], answer:2},
+{unit:"ECO 102", q:"When central bank buys securities, what happens?", options:["Money supply decreases", "Money supply increases", "Interest rates increase", "Prices fall"], answer:1},
+{unit:"ECO 102", q:"When central bank lowers reserve requirement:", options:["Banks must hold more", "Banks can lend more (money supply increases)", "Interest rates rise", "Investment decreases"], answer:1},
+{unit:"ECO 102", q:"What is discount rate?", options:["Sale price", "Interest rate charged to banks borrowing from central bank", "Inflation rate", "Growth rate"], answer:1},
+{unit:"ECO 102", q:"When is contractionary policy used?", options:["During recession", "During high inflation", "When unemployment high", "To increase spending"], answer:1},
+];
+
+const ETL114_QUESTIONS = [
+{unit:"ETL 114", q:"What is a digital library?", options:["Physical library with computers", "Organized collection of digital resources accessible through networks", "Database of books", "Website about libraries"], answer:1},
+{unit:"ETL 114", q:"Which materials are available in digital format in digital libraries?", options:["Books only", "Journals, books, newspapers, photographs, pictures, videos, music", "Audio recordings only", "Text only"], answer:1},
+{unit:"ETL 114", q:"What does digital library do at creation?", options:["Prints information", "Files information manually", "Captures information at creation", "Stores in physical format"], answer:2},
+{unit:"ETL 114", q:"What advantage does digital format provide?", options:["Requires more space", "Requires less physical space", "Same space as physical", "Needs buildings"], answer:1},
+{unit:"ETL 114", q:"How is content distributed in digital libraries?", options:["One central server", "Across multiple servers", "Only locally", "Only in one building"], answer:1},
+{unit:"ETL 114", q:"What does digital library do with content?", options:["Lets it deteriorate", "Maintains and preserves it", "Loses it overtime", "Sells it"], answer:1},
+{unit:"ETL 114", q:"What is simple search?", options:["Complex search", "Basic keyword search", "Advanced Boolean", "Librarian assisted"], answer:1},
+{unit:"ETL 114", q:"What does advanced search include?", options:["Simple keywords", "Boolean operators (AND, OR, NOT)", "One word only", "By price"], answer:1},
+{unit:"ETL 114", q:"What do wildcards do in searching?", options:["Block results", "Match partial terms", "Show all books", "Delete searches"], answer:1},
+{unit:"ETL 114", q:"How do you search for exact phrase?", options:["Just type words", "Use quotation marks", "Bold the words", "Underline"], answer:1},
+{unit:"ETL 114", q:"Which is hardware in digital library?", options:["Software", "Servers, computers, storage devices", "Network protocols", "Databases"], answer:1},
+{unit:"ETL 114", q:"What does OCR do?", options:["Deletes text", "Converts scanned images to searchable text", "Creates images", "Stores files"], answer:1},
+{unit:"ETL 114", q:"What is Digital Rights Management?", options:["Managing libraries", "Technology protecting digital content from unauthorized use", "Software for users", "Internet protocol"], answer:1},
+{unit:"ETL 114", q:"Which is a digital library platform?", options:["Microsoft Word", "DSpace, Greenstone, Fedora", "Zoom", "Gmail"], answer:1},
+{unit:"ETL 114", q:"Which is type of online database?", options:["Telephone directory", "Indexing, reference, full-text, statistical databases", "Social media", "Business registry"], answer:1},
+{unit:"ETL 114", q:"What is Web OPAC?", options:["Physical library catalog", "Online catalog accessible through internet using browsers", "Website design", "Computer system"], answer:1},
+{unit:"ETL 114", q:"Which can be used to access Web OPAC?", options:["Only Internet Explorer", "Any common browser (Microsoft Explorer, Chrome, Google)", "Only specialized software", "Telephone"], answer:1},
+{unit:"ETL 114", q:"What do current awareness services do?", options:["Archive old materials", "Draw attention to current resources of interest to users", "Hide new materials", "Prevent access"], answer:1},
+{unit:"ETL 114", q:"What benefit do current awareness services provide?", options:["Reduce library use", "Help users learn research attitudes and stay informed", "Limit access", "Increase costs"], answer:1},
+{unit:"ETL 114", q:"What is Selective Dissemination of Information?", options:["Distributing all information equally", "Service based on identified user interests, sending customized information", "Random distribution", "Marketing service"], answer:1},
+{unit:"ETL 114", q:"When SDI sends current information, what does it do?", options:["Delays it", "Library staff monitor and send electronically or alerts", "Charges fee", "Requires visit"], answer:1},
+{unit:"ETL 114", q:"When user needs non-current information, what happens?", options:["Refuses service", "Both current and older information packaged for user", "Charges more", "Waits months"], answer:1},
+{unit:"ETL 114", q:"What do electronic libraries provide?", options:["Physical books only", "Online reference sources and search assistance", "No services", "Private collections"], answer:1},
+{unit:"ETL 114", q:"What does www.about.com offer?", options:["Books for sale", "Predefined categories related to search topics", "Legal services", "Medical advice"], answer:1},
+{unit:"ETL 114", q:"What are digital reference services?", options:["Old library services", "Internet-based question and answer services connecting users with expertise", "Books only", "Physical reference only"], answer:1},
+{unit:"ETL 114", q:"What is asynchronous digital reference tool?", options:["Real-time chat", "Email, FAQ, subject gateway (not real-time)", "Phone calls", "In-person"], answer:1},
+{unit:"ETL 114", q:"What is interactive digital reference?", options:["Email only", "Chat room, virtual reference desk, video conferencing (real-time)", "Letters", "Slow service"], answer:1},
+{unit:"ETL 114", q:"What does ask a librarian service do?", options:["Ignores questions", "Allows users to send formatted enquiries to reference librarian", "Charges high fees", "Only during business hours"], answer:1},
+{unit:"ETL 114", q:"How are digital reference services provided?", options:["Email only", "Email, web forms, online chat, video conferencing, collaborative reference", "Phone only", "In person"], answer:1},
+{unit:"ETL 114", q:"What is DRS service for libraries?", options:["Expensive cost", "One of essential services provided by modern libraries", "Outdated", "Only for large libraries"], answer:1},
+{unit:"ETL 114", q:"What does OPAC stand for?", options:["Online Public Access Card", "Online Public Access Catalog", "Open Public Archive Card", "Online Personal Access Code"], answer:1},
+{unit:"ETL 114", q:"What is primary purpose of OPAC?", options:["Restrict access", "Enable users to know available collections and search catalog", "Sell books", "Delete records"], answer:1},
+{unit:"ETL 114", q:"What can users do with OPAC?", options:["Only browse", "Search, check availability, find location, view details", "Borrow without visiting", "Modify records"], answer:1},
+{unit:"ETL 114", q:"What does OPAC availability check show?", options:["Only borrowed items", "If item available or checked out with return dates", "Price", "Author information"], answer:1},
+{unit:"ETL 114", q:"What location information does OPAC provide?", options:["Directions to library", "Which shelf has item", "Call number and location/section", "Zip code"], answer:2},
+{unit:"ETL 114", q:"What can users do with unavailable items?", options:["Nothing", "Place requests/holds on checked-out materials", "Wait silently", "Complain only"], answer:1},
+{unit:"ETL 114", q:"What is simple OPAC search?", options:["Complex query", "Basic keyword search", "Boolean operators", "Author search only"], answer:1},
+{unit:"ETL 114", q:"What does advanced OPAC search allow?", options:["Keyword only", "Multiple fields, Boolean operators, date ranges, subject headings", "No options", "Title only"], answer:1},
+{unit:"ETL 114", q:"What is subject search in OPAC?", options:["Random results", "Browse by subject with controlled vocabulary", "By price", "By date"], answer:1},
+{unit:"ETL 114", q:"Which information does OPAC provide?", options:["Author location", "Title, author, publisher, publication date, ISBN", "Seller information", "Stock price"], answer:1},
+{unit:"ETL 114", q:"What access information does OPAC show?", options:["Price only", "Call number, location, availability status, copy number", "Shipping", "Rental cost"], answer:1},
+{unit:"ETL 114", q:"What content details does OPAC provide?", options:["Nothing", "Subject headings, summary, table of contents, related materials", "Price only", "Stock information"], answer:1},
+{unit:"ETL 114", q:"How does OPAC benefit users?", options:["Makes research harder", "Find materials quickly, check availability before visiting, make informed decisions", "Slows down research", "No benefit"], answer:1},
+{unit:"ETL 114", q:"How does OPAC benefit libraries?", options:["Costs more", "Track inventory, understand usage, serve more users, improve service", "Reduces service", "Makes work harder"], answer:1},
+{unit:"ETL 114", q:"What is OAU library OPAC address?", options:["www.oau.edu.ng", "ir.oauife.edu.ng (OAUSpace)", "oau.library.com", "oau-opac.org"], answer:1},
+{unit:"ETL 114", q:"How are digital library users different from physical library users?", options:["Completely different", "Must have skills to manipulate systems to find information", "Same with no difference", "Less capable"], answer:1},
+{unit:"ETL 114", q:"Which characterizes users?", options:["Only age", "Age, experience, job background, seniority", "Only education", "Income only"], answer:1},
+{unit:"ETL 114", q:"What are potential users?", options:["Users using service right now", "Those who need information service might provide", "Users who refuse service", "Rich users"], answer:1},
+{unit:"ETL 114", q:"What are expected users?", options:["Rich users", "Users known to have intention of using certain services", "Random users", "Government users"], answer:1},
+{unit:"ETL 114", q:"What are actual users?", options:["Those planning to use", "Those who actually used service regardless of benefit", "Those who never use", "Staff only"], answer:1},
+{unit:"ETL 114", q:"What are beneficiary users?", options:["Free users", "Those who derived measurable advantage from services", "Those who complained", "Anyone"], answer:1},
+{unit:"ETL 114", q:"Why should digital librarians use user profiling?", options:["To restrict access", "To ensure users have access to available information matching their needs", "To spy", "To charge more"], answer:1},
+{unit:"ETL 114", q:"What should users possess?", options:["Only reading ability", "Ability to use different search strategies to gain required information", "Nothing specific", "Computer repair skills"], answer:1},
+{unit:"ETL 114", q:"What helps digital library users?", options:["Age", "Being conversant with subject domain makes exploration easier", "Nothing helps", "High fees"], answer:1},
+{unit:"ETL 114", q:"What do digital library users desire?", options:["Limited access", "Uninterrupted access to collections and services regardless of where, format, or organization", "Only physical materials", "Expensive services"], answer:1},
+{unit:"ETL 114", q:"What is user unfriendliness problem?", options:["Users are unfriendly", "Complex interface results in non-use despite good information", "Libraries unfriendly", "No problem"], answer:1},
+{unit:"ETL 114", q:"How does complexity of interfaces affect users?", options:["Helps them", "Affects usability and accessibility", "No effect", "Improves searching"], answer:1},
+{unit:"ETL 114", q:"What problem exists with different search systems?", options:["Helps users", "Complexity affects disability and usability", "No problem", "Makes things easier"], answer:1},
+{unit:"ETL 114", q:"What is lack of knowledge problem?", options:["Users know everything", "Users without skills can't use digital resources effectively", "No problem", "Users too smart"], answer:1},
+{unit:"ETL 114", q:"What must readers possess?", options:["Nothing", "Basic skills to use electronic resources", "High IQ", "Engineering degree"], answer:1},
+{unit:"ETL 114", q:"What do inexperienced users need?", options:["Punishment", "Help and training to use e-journals and digital resources", "Nothing", "To be ignored"], answer:1},
+{unit:"ETL 114", q:"What is time commitment problem?", options:["Too much free time", "Online access is time-consuming to search, access, and read materials", "No time needed", "Instant access always"], answer:1},
+{unit:"ETL 114", q:"What technical problems affect systems?", options:["No problems", "Server downtime, slow speeds, broken links, crashes", "Everything works perfectly", "No limitations"], answer:1},
+{unit:"ETL 114", q:"What design issues affect systems?", options:["No issues", "Complex interface, poor navigation, difficult search", "Perfect design", "Always easy"], answer:1},
+{unit:"ETL 114", q:"What accessibility issues exist?", options:["No issues", "Not compatible with assistive technology, poor mobile response, no alt-text", "Everything accessible", "Works for everyone"], answer:1},
+{unit:"ETL 114", q:"What infrastructure challenges exist?", options:["Perfect infrastructure", "Limited bandwidth, poor internet connection required, network bottlenecks", "No problems", "Unlimited capacity"], answer:1},
+{unit:"ETL 114", q:"What maintenance issues exist?", options:["No issues", "Outdated content, broken databases, poor indexing", "Always updated", "Perfect maintenance"], answer:1},
+{unit:"ETL 114", q:"What security vulnerabilities exist?", options:["No security issues", "Hacking risks, data loss, privacy breaches", "Perfectly secure", "Never hacked"], answer:1},
+{unit:"ETL 114", q:"What performance problems arise?", options:["Perfect speed", "Slow response time, timeout errors, processing delays", "No delays", "Always instant"], answer:1},
+{unit:"ETL 114", q:"What impact do these challenges have?", options:["Help users", "Users can't access resources effectively, leading to frustration and abandonment", "No impact", "Improve usage"], answer:1},
+];
+
+const COURSES = [
+  {code:"EDT 118", name:"", questions: EDT118_QUESTIONS},
+  {code:"ECO 102", name:"", questions: ECO102_QUESTIONS},
+  {code:"ETL 114", name:"", questions: ETL114_QUESTIONS},
+  {code:"GST 112", name:"", questions: null},
+  {code:"EDU 102", name:"", questions: null},
+  {code:"ECO 104", name:"", questions: null},
+  {code:"LIB 002", name:"", questions: null},
+  {code:"ALL 124", name:"", questions: null},
+  {code:"ALL 126", name:"", questions: null},
+  {code:"EDT 120", name:"", questions: null}
+];
+
+const SESSION_SIZE = 20;
+const TIME_LIMIT_SECONDS = 600; // 10 minutes
+
+const courseScreen = document.getElementById('course-screen');
+const courseList = document.getElementById('course-list');
+const lockedMsg = document.getElementById('locked-msg');
+const quizScreen = document.getElementById('quiz-screen');
+const pageTitle = document.getElementById('page-title');
+const pageSub = document.getElementById('page-sub');
+const changeCourseBtn = document.getElementById('change-course-btn');
+const submitMidBtn = document.getElementById('submit-mid-btn');
+
+const form = document.getElementById('quiz-form');
+const answeredCountEl = document.getElementById('answered-count');
+const totalCountEl = document.getElementById('total-count');
+const liveScoreEl = document.getElementById('live-score');
+const resultEl = document.getElementById('result');
+const timerValueEl = document.getElementById('timer-value');
+const timerDisplayEl = document.getElementById('timer-display');
+const prevBtn = document.getElementById('prev-btn');
+const nextBtn = document.getElementById('next-btn');
+const navRow = document.getElementById('nav-row');
+const submitRow = document.getElementById('submit-row');
+const resetBtn = document.getElementById('reset-btn');
+const progressText = document.getElementById('progress-text');
+const progressFill = document.getElementById('progress-fill');
+
+let activeCourse = null;
+let sessionQuestions = [];
+let answers = [];
+let currentIndex = 0;
+let timerInterval = null;
+let secondsLeft = TIME_LIMIT_SECONDS;
+let graded = false;
+
+function renderCourseList(){
+  courseList.innerHTML = '';
+  COURSES.forEach(course => {
+    const open = !!course.questions;
+    const card = document.createElement('div');
+    card.className = 'course-card ' + (open ? 'open' : 'locked');
+    card.innerHTML = `
+      <span class="code">${course.code}${course.name ? ' — ' + course.name : ''}</span>
+      <span class="status">${open ? 'Available' : 'Locked'}</span>
+    `;
+    card.addEventListener('click', () => {
+      if (open){
+        lockedMsg.style.display = 'none';
+        startCourse(course);
+      } else {
+        lockedMsg.style.display = 'block';
+      }
+    });
+    courseList.appendChild(card);
+  });
+}
+
+function startCourse(course){
+  activeCourse = course;
+  document.getElementById('active-course-label').textContent = course.code;
+  courseScreen.style.display = 'none';
+  quizScreen.style.display = 'block';
+  graded = false;
+  resultEl.style.display = 'none';
+  navRow.style.display = 'flex';
+  submitRow.style.display = 'none';
+  progressText.style.display = 'block';
+  progressFill.parentElement.style.display = 'block';
+  liveScoreEl.textContent = '—';
+  pickSession();
+  renderQuestion();
+  startTimer();
+}
+
+changeCourseBtn.addEventListener('click', () => {
+  clearInterval(timerInterval);
+  quizScreen.style.display = 'none';
+  courseScreen.style.display = 'block';
+});
+
+function shuffle(arr){
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function pickSession(){
+  sessionQuestions = shuffle(activeCourse.questions).slice(0, SESSION_SIZE);
+  answers = new Array(sessionQuestions.length).fill(null);
+  currentIndex = 0;
+  totalCountEl.textContent = sessionQuestions.length;
+}
+
+function updateAnsweredCount(){
+  const answered = answers.filter(a => a !== null).length;
+  answeredCountEl.textContent = answered;
+}
+
+function updateProgress(){
+  progressText.textContent = 'Question ' + (currentIndex + 1) + ' of ' + sessionQuestions.length;
+  progressFill.style.width = Math.round(((currentIndex + 1) / sessionQuestions.length) * 100) + '%';
+  prevBtn.disabled = currentIndex === 0;
+  nextBtn.disabled = currentIndex === sessionQuestions.length - 1;
+}
+
+function renderQuestion(){
+  const item = sessionQuestions[currentIndex];
+  form.innerHTML = '';
+
+  const div = document.createElement('div');
+  div.className = 'q';
+
+  const unitTag = document.createElement('div');
+  unitTag.className = 'q-unit';
+  unitTag.textContent = item.unit;
+  div.appendChild(unitTag);
+
+  const qText = document.createElement('div');
+  qText.className = 'q-text';
+  qText.textContent = item.q;
+  div.appendChild(qText);
+
+  item.options.forEach((opt, oi) => {
+    const label = document.createElement('label');
+    label.className = 'opt';
+    const checkedAttr = answers[currentIndex] === oi ? 'checked' : '';
+    label.innerHTML = `<input type="radio" name="current-q" value="${oi}" ${checkedAttr}> ${opt}`;
+    label.querySelector('input').addEventListener('change', () => {
+      answers[currentIndex] = oi;
+      updateAnsweredCount();
+    });
+    div.appendChild(label);
+  });
+
+  form.appendChild(div);
+  updateProgress();
+}
+
+prevBtn.addEventListener('click', () => {
+  if (currentIndex > 0){
+    currentIndex--;
+    renderQuestion();
+  }
+});
+
+nextBtn.addEventListener('click', () => {
+  if (currentIndex < sessionQuestions.length - 1){
+    currentIndex++;
+    renderQuestion();
+  }
+});
+
+submitMidBtn.addEventListener('click', () => gradeQuiz(false));
+
+function formatTime(s){
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return m + ':' + String(sec).padStart(2, '0');
+}
+
+function startTimer(){
+  clearInterval(timerInterval);
+  secondsLeft = TIME_LIMIT_SECONDS;
+  timerDisplayEl.classList.remove('low');
+  timerValueEl.textContent = formatTime(secondsLeft);
+
+  timerInterval = setInterval(() => {
+    secondsLeft--;
+    timerValueEl.textContent = formatTime(Math.max(secondsLeft, 0));
+    if (secondsLeft <= 60) timerDisplayEl.classList.add('low');
+    if (secondsLeft <= 0){
+      clearInterval(timerInterval);
+      if (!graded) gradeQuiz(true);
+    }
+  }, 1000);
+}
+
+function gradeQuiz(timedOut){
+  if (graded) return;
+  graded = true;
+  clearInterval(timerInterval);
+
+  let score = 0;
+  sessionQuestions.forEach((item, qi) => {
+    if (answers[qi] === item.answer) score++;
+  });
+
+  liveScoreEl.textContent = score + ' / ' + sessionQuestions.length;
+  const pct = Math.round((score / sessionQuestions.length) * 100);
+
+  navRow.style.display = 'none';
+  submitRow.style.display = 'block';
+  progressText.style.display = 'none';
+  progressFill.parentElement.style.display = 'none';
+
+  form.innerHTML = '';
+  sessionQuestions.forEach((item, qi) => {
+    const div = document.createElement('div');
+    div.className = 'q';
+
+    const unitTag = document.createElement('div');
+    unitTag.className = 'q-unit';
+    unitTag.textContent = item.unit + ' · Question ' + (qi + 1);
+    div.appendChild(unitTag);
+
+    const qText = document.createElement('div');
+    qText.className = 'q-text';
+    qText.textContent = item.q;
+    div.appendChild(qText);
+
+    item.options.forEach((opt, oi) => {
+      const label = document.createElement('label');
+      label.className = 'opt';
+      if (oi === item.answer) label.classList.add('correct');
+      else if (oi === answers[qi]) label.classList.add('incorrect');
+      label.innerHTML = `<input type="radio" disabled ${oi === answers[qi] ? 'checked' : ''}> ${opt}`;
+      div.appendChild(label);
+    });
+
+    form.appendChild(div);
+  });
+
+  resultEl.style.display = 'block';
+  const timeoutNote = timedOut ? ' — time ran out' : '';
+  resultEl.innerHTML = `<strong style="font-size:1.3rem;">You scored ${score} / ${sessionQuestions.length} (${pct}%)${timeoutNote}</strong>`;
+  resultEl.scrollIntoView({behavior:'smooth'});
+}
+
+resetBtn.addEventListener('click', () => {
+  startCourse(activeCourse);
+});
+
+renderCourseList();
+</script>
+
+</body>
+</html>
