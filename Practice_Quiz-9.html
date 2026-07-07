@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>HashQuiz — Practice Smarter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1F2937;
+    --secondary:#6B7280;
+    --paper:#F8F5F0;
+    --rule:#E5E1D6;
+    --header-blue:#1E3A8A;
+    --primary:#10B981;
+    --primary-dark:#0ea371;
+    --gold:#D4AF37;
+    --card:#FFFFFF;
+    --wrong:#DC2626;
+    --right:#10B981;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',Helvetica,Arial,sans-serif;
+    line-height:1.5;
+  }
+  header{
+    padding:22px 20px 20px;
+    background:var(--header-blue);
+    text-align:center;
+  }
+  header h1{
+    margin:0;
+    font-size:1.6rem;
+    font-weight:800;
+    color:#fff;
+    letter-spacing:0.01em;
+  }
+  header .byline{
+    color:var(--gold);
+    font-size:0.8rem;
+    font-weight:600;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    margin-top:2px;
+  }
+  header .tagline{
+    margin:10px 0 4px;
+    font-size:0.95rem;
+    color:#eef2ff;
+    font-weight:500;
+  }
+  header p{
+    margin:0;
+    font-size:0.78rem;
+    color:#c7d2fe;
+    font-weight:500;
+    letter-spacing:0.06em;
+  }
+  #score-bar{
+    position:sticky;
+    top:0;
+    background:var(--paper);
+    border-bottom:1px solid var(--rule);
+    padding:8px 14px;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:space-between;
+    align-items:center;
+    row-gap:4px;
+    column-gap:10px;
+    font-family:'Inter',Helvetica,Arial,sans-serif;
+    font-size:0.72rem;
+    z-index:5;
+  }
+  #score-bar span{white-space:nowrap;}
+  #score-bar strong{font-size:0.95rem;}
+  main{
+    max-width:720px;
+    margin:0 auto;
+    padding:20px 20px 80px;
+  }
+  .q{
+    margin-bottom:26px;
+    padding-bottom:18px;
+    border-bottom:1px solid var(--rule);
+  }
+  .q-unit{
+    font-family:Helvetica,Arial,sans-serif;
+    font-size:0.68rem;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    color:var(--header-blue);
+    margin-bottom:4px;
+  }
+  .q-text{
+    font-weight:bold;
+    margin-bottom:10px;
+  }
+  .opt{
+    display:block;
+    padding:8px 10px;
+    margin:6px 0;
+    border:1px solid var(--rule);
+    border-radius:8px;
+    cursor:pointer;
+    background:var(--card);
+    transition:background .15s;
+  }
+  .opt:hover{background:#f3f4f6;}
+  .opt input{margin-right:8px;}
+  .opt.correct{border-color:var(--right);background:#e6f9f1;}
+  .opt.incorrect{border-color:var(--wrong);background:#fdecec;}
+  .explain{
+    display:none;
+    font-family:'Inter',Helvetica,Arial,sans-serif;
+    font-size:0.82rem;
+    color:var(--secondary);
+    margin-top:8px;
+    padding-left:4px;
+    border-left:3px solid var(--rule);
+    padding-left:10px;
+  }
+  #submit-row{
+    text-align:center;
+    margin:30px 0;
+  }
+  button{
+    font-family:'Inter',Helvetica,Arial,sans-serif;
+    font-weight:600;
+    background:var(--primary);
+    color:#fff;
+    border:none;
+    padding:12px 26px;
+    font-size:0.95rem;
+    letter-spacing:0.01em;
+    border-radius:8px;
+    cursor:pointer;
+    transition:background .15s, transform .1s;
+  }
+  button:hover{background:var(--primary-dark);}
+  button:active{transform:scale(0.97);}
+  button.secondary{
+    background:transparent;
+    color:var(--primary);
+    border:1px solid var(--primary);
+    margin-left:10px;
+  }
+  #result{
+    text-align:center;
+    font-family:'Inter',Helvetica,Arial,sans-serif;
+    padding:14px;
+    margin-bottom:10px;
+    display:none;
+  }
+  #timer-display.low{
+    color:var(--wrong);
+    font-weight:bold;
+  }
+  #progress-text{
+    font-family:'Inter',Helvetica,Arial,sans-serif;
+    font-size:0.8rem;
+    color:var(--secondary);
+    text-align:center;
+    margin-bottom:6px;
+  }
+  #progress-bar{
+    height:6px;
+    background:var(--rule);
+    border-radius:3px;
+    overflow:hidden;
+    margin-bottom:22px;
+  }
+  #progress-fill{
+    height:100%;
+    background:var(--header-blue);
+    width:0%;
+    transition:width .2s;
+  }
+  #nav-row{
+    display:flex;
+    justify-content:space-between;
+    margin-top:20px;
+  }
+  button:disabled{
+    opacity:0.4;
+    cursor:default;
+  }
+  #course-screen{
+    max-width:640px;
+    margin:0 auto;
+    padding:30px 20px 60px;
+  }
+  #course-screen h2{
+    font-size:1.15rem;
+    font-weight:700;
+    margin-bottom:4px;
+  }
+  #course-screen .sub{
+    font-family:'Inter',Helvetica,Arial,sans-serif;
+    font-size:0.85rem;
+    color:var(--secondary);
+    margin-bottom:24px;
+  }
+  .course-card{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:16px 18px;
+    margin-bottom:12px;
+    border:1px solid var(--rule);
+    border-radius:10px;
+    background:var(--card);
+    cursor:pointer;
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  .course-card.open:hover{
+    transform:scale(1.02);
+    box-shadow:0 0 0 3px rgba(16,185,129,0.25), 0 8px 20px rgba(16,185,129,0.15);
+    border-color:var(--primary);
+  }
+  .course-card.open:active{
+    transform:scale(1.03);
+    box-shadow:0 0 0 4px rgba(16,185,129,0.35), 0 10px 24px rgba(16,185,129,0.22);
+    border-color:var(--primary);
+  }
+  .course-card.locked{
+    cursor:default;
+    opacity:0.6;
+  }
+  .course-card .code{
+    font-weight:700;
+    font-size:1rem;
+  }
+  .course-card .status{
+    font-family:'Inter',Helvetica,Arial,sans-serif;
+    font-size:0.75rem;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+  }
+  .course-card.open .status{color:var(--right);}
+  .course-card.locked .status{color:var(--wrong);}
+  #locked-msg{
+    display:none;
+    font-family:'Inter',Helvetica,Arial,sans-serif;
+    font-size:0.85rem;
+    color:var(--wrong);
+    text-align:center;
+    margin-top:14px;
+  }
+  #change-course-row{
+    text-align:center;
+    margin-bottom:10px;
+  }
+  #active-course-label{
+    display:block;
+    font-weight:700;
+    color:var(--header-blue);
+    font-size:0.85rem;
+    margin-bottom:6px;
+    letter-spacing:0.04em;
+  }
+  #change-course-btn{
+    background:transparent;
+    color:var(--header-blue);
+    border:1px solid var(--header-blue);
+    padding:6px 14px;
+    font-size:0.8rem;
+  }
+  footer{
+    text-align:center;
+    padding:18px 20px 26px;
+    font-size:0.78rem;
+    color:var(--secondary);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1 id="page-title">🎓 HashQuiz</h1>
+  <div class="byline">by Hash</div>
+  <div class="tagline">Practice smarter.</div>
+  <p id="page-sub">20 Questions • 10 Minutes • Instant Result</p>
+</header>
+
+<div id="course-screen">
+  <h2>Choose a course</h2>
+  <div class="sub">20 random questions per session · 10-minute timer · auto-graded</div>
+  <div id="course-list"></div>
+  <div id="locked-msg">This course isn't unlocked yet. The material hasn't been sent for it.</div>
+</div>
+
+<div id="quiz-screen" style="display:none;">
+
+  <div id="score-bar">
+    <span>Ans: <strong id="answered-count">0</strong>/<span id="total-count">0</span></span>
+    <span id="timer-display">⏱ <strong id="timer-value">10:00</strong></span>
+    <span>Score: <strong id="live-score">—</strong></span>
+  </div>
+
+  <main>
+    <div id="change-course-row">
+      <span id="active-course-label"></span>
+      <button type="button" id="change-course-btn">Change course</button>
+    </div>
+    <div id="result"></div>
+    <div id="progress-text"></div>
+    <div id="progress-bar"><div id="progress-fill"></div></div>
+    <form id="quiz-form"></form>
+    <div id="nav-row">
+      <button type="button" id="prev-btn" class="secondary">Previous</button>
+      <button type="button" id="submit-mid-btn" class="secondary">Submit now</button>
+      <button type="button" id="next-btn">Next</button>
+    </div>
+    <div id="submit-row" style="display:none;">
+      <button type="button" id="reset-btn" class="secondary">Try again (same course)</button>
+    </div>
+  </main>
+
+</div>
+
+<footer>© 2026 Hash. All rights reserved.</footer>
+
+<script>
+const EDT118_QUESTIONS = [
+// ===== UNIT 1 =====
+{unit:"Unit 1", q:"Who plays a particularly crucial role as a child's first teacher?", options:["The father","The mother","The sibling","The grandparent"], answer:1},
+{unit:"Unit 1", q:"What term describes a systematic attempt to transfer knowledge or skills from one who knows to one who doesn't, preparing someone for a job?", options:["Instruction","Training","Teaching","Facilitation"], answer:1},
+{unit:"Unit 1", q:"Which term is broader than teaching, subsuming both teaching and classroom management?", options:["Training","Coaching","Mentoring","Instruction"], answer:3},
+{unit:"Unit 1", q:"Teaching is described as having what dual nature?", options:["Both science and art","Both theory and practice","Both formal and informal","Both direct and passive"], answer:0},
+{unit:"Unit 1", q:"Which type of teaching is teacher-centered, such as lecture or demonstration?", options:["Indirect teaching","Vertical teaching","Direct teaching","Unplanned teaching"], answer:2},
+{unit:"Unit 1", q:"Which type of teaching goes deep into one topic to promote higher-order thinking?", options:["Horizontal teaching","Indirect teaching","Vertical teaching","Unplanned teaching"], answer:2},
+{unit:"Unit 1", q:"Since the 1980s, which approach views learning as a personal process of integrating new experience with prior knowledge?", options:["Constructivist approach","Behaviourist approach","Cognitivist approach","Traditional approach"], answer:0},
+{unit:"Unit 1", q:"In the facilitation of learning, which stage involves gathering resources and selecting content or activities?", options:["During-instructional stage","Post-instructional stage","Pre-instructional stage","Evaluation stage"], answer:2},
+{unit:"Unit 1", q:"In the facilitation of learning, which stage involves guiding steps, monitoring, and enforcing ground rules?", options:["During-instructional stage","Pre-instructional stage","Post-instructional stage","Planning stage"], answer:0},
+{unit:"Unit 1", q:"What technique prevents boredom and improves learning by varying teaching techniques or media?", options:["Stimulus reduction","Content repetition","Passive reception","Stimulus variation"], answer:3},
+{unit:"Unit 1", q:"Which learner trait refers to the capacity to think, reason, and solve problems?", options:["Attitude","Motivation","Intelligence","Self-esteem"], answer:2},
+{unit:"Unit 1", q:"Which learner-centered approach characteristic emphasizes cooperative determination of subject matter?", options:["Cooperative determination of subject matter","Teacher-controlled strategies","Uniformity of exposure","Emphasis on direct strategies"], answer:0},
+{unit:"Unit 1", q:"What is the effect of giving students voice and choice in goal-setting?", options:["It increases teacher control","It reduces student commitment","It reduces hostility and increases autonomy","It causes disengagement"], answer:2},
+{unit:"Unit 1", q:"Which of these is a technique for increasing children's active participation?", options:["Reading slides word-for-word","Enforcing silent listening only","Getting students to summarize information","Avoiding open-ended questions"], answer:2},
+{unit:"Unit 1", q:"According to the text, learning is defined as what kind of change?", options:["A permanent change in actual performance only","A temporary change in observable action","A relatively persistent change in potential behaviour due to experience","An inherited change in personality traits"], answer:2},
+{unit:"Unit 1", q:"Which historical school of thought views learning as a stimulus-response reinforcement process?", options:["Cognitivist school","Behaviourist school","Constructivist school","Humanist school"], answer:1},
+{unit:"Unit 1", q:"Which historical school of thought views learning as acquisition, assimilation, and accommodation of knowledge?", options:["Behaviourist school","Cognitivist school","Constructivist school","Social school"], answer:1},
+{unit:"Unit 1", q:"Which of the following is listed as a nature of learning in the text?", options:["Learning is always formal","Learning is always collective","Learning is always desirable","Learning is life-long"], answer:3},
+{unit:"Unit 1", q:"According to Bruner and Ausubel, what does each discipline possess that aids learning?", options:["A fixed list of facts","A single core skill","A random set of topics","A structure of key concepts"], answer:3},
+{unit:"Unit 1", q:"What is the first stage of skill development in the text?", options:["Associative stage","Cognitive stage","Automated stage","Reflective stage"], answer:1},
+{unit:"Unit 1", q:"What is the final stage of skill development, performed with little conscious thought?", options:["Cognitive stage","Automated stage","Associative stage","Preparatory stage"], answer:1},
+{unit:"Unit 1", q:"Which component of attitude refers to beliefs and rationalizations?", options:["Cognitive component","Affective component","Conative component","Behavioural component"], answer:0},
+{unit:"Unit 1", q:"Which component of attitude refers to the emotional aspect, such as likes and dislikes?", options:["Cognitive component","Affective component","Conative component","Structural component"], answer:1},
+{unit:"Unit 1", q:"A positive learning climate is associated with the release of which substance?", options:["Cortisol","Adrenaline","Dopamine only","Endorphins"], answer:3},
+{unit:"Unit 1", q:"Which way of learning involves copying role models, such as children imitating parents?", options:["Observation","Reflection","Experimentation","Imitation"], answer:3},
+{unit:"Unit 1", q:"Which way of learning involves testing options until the right solution is found?", options:["Imitation","Trial and error","Instruction","Reflection"], answer:1},
+{unit:"Unit 1", q:"Which way of learning involves deliberate consideration of alternatives rather than impulsive responding?", options:["Imitation","Observation","Trial and error","Reflection"], answer:3},
+{unit:"Unit 1", q:"According to the summary, teaching aims to bring about changes in which three domains?", options:["Physical, social, and spiritual domains","Cognitive, affective, and psycho-motor domains","Verbal, visual, and kinesthetic domains","Formal, informal, and non-formal domains"], answer:1},
+// ===== UNIT 2 =====
+{unit:"Unit 2", q:"According to the Oxford Dictionary as cited in the text, teaching means to impart knowledge or skill and to do what else?", options:["Test and grade","Discipline and control","Entertain and distract","Instill and inspire"], answer:3},
+{unit:"Unit 2", q:"Which characteristic of teaching describes it as changing with time, technology, and society?", options:["Complex","Dynamic","Professional","Goal-oriented"], answer:1},
+{unit:"Unit 2", q:"Which characteristic of teaching requires specialized training, ethics, certification, and continuous development?", options:["Professional","Dynamic","Interactive","Complex"], answer:0},
+{unit:"Unit 2", q:"According to Thornton (2013), which teaching style is instruction-based and traditional, guiding via lecture or demonstration?", options:["Discussing style","Directing style","Delegating style","Collaborative style"], answer:1},
+{unit:"Unit 2", q:"According to Thornton (2013), which teaching style has the teacher acting as facilitator while learners discuss and think critically?", options:["Directing style","Delegating style","Discussing style","Instructive style"], answer:2},
+{unit:"Unit 2", q:"According to Thornton (2013), which teaching style grants learners autonomy to work independently on assignments?", options:["Directing style","Discussing style","Delegating style","Guiding style"], answer:2},
+{unit:"Unit 2", q:"What does the 'Triple C' of effective teaching stand for?", options:["Clarity, Consistency, Creativity","Content, Context, Communication","Clarity, Conciseness, Comprehensiveness","Care, Commitment, Confidence"], answer:2},
+{unit:"Unit 2", q:"Who defined teaching models as prescriptive strategies designed for specific instructional goals?", options:["Jean Piaget","Paul D. Eggen","B.F. Skinner","Jerome Bruner"], answer:1},
+{unit:"Unit 2", q:"Which teaching model, associated with Dewey and Thelim, involves group work with mixed personalities?", options:["Social Inquiry","Laboratory Model","Direct Model","Group Investigation"], answer:3},
+{unit:"Unit 2", q:"Which teaching model developed by Skinner uses computer-assisted instruction?", options:["Direct model","Practice-based model","Programmed model","Laboratory model"], answer:2},
+{unit:"Unit 2", q:"Which teaching model developed by Gagn\u00e9 focuses on sensory memory, readiness, motivation, and retention?", options:["Bruner's model","Schuman's model","Roger's model","Gagn\u00e9's model"], answer:3},
+{unit:"Unit 2", q:"Which teaching model, developed by Carl Rogers, focuses on human relations?", options:["Non-directive model","Self-Awareness model","Creative model","Direct model"], answer:0},
+{unit:"Unit 2", q:"Which teaching method is described as teacher-dominant and useful for higher classes with a vast syllabus?", options:["Demonstrative method","Lecture method","Heuristic method","Project method"], answer:1},
+{unit:"Unit 2", q:"Which teaching method, developed by Armstrong, has learners explore facts and principles themselves?", options:["Heuristic/Discovery method","Lecture method","Demonstrative method","Analytic method"], answer:0},
+{unit:"Unit 2", q:"Which teaching method was developed by Kilpatrick and involves static/working models or investigatory projects?", options:["Problem-solving method","Project method","Heuristic method","Synthetic method"], answer:1},
+{unit:"Unit 2", q:"Which method of teaching moves from specific instances to general principles?", options:["Deductive method","Inductive method","Analytic method","Synthetic method"], answer:1},
+{unit:"Unit 2", q:"Which method of teaching breaks a whole into parts, moving from unknown to known?", options:["Analytic method","Synthetic method","Inductive method","Deductive method"], answer:0},
+{unit:"Unit 2", q:"Which phase of teaching involves setting aims/objectives and arranging content before class?", options:["Interactive phase","Post-active phase","Pre-active phase","Evaluative phase"], answer:2},
+{unit:"Unit 2", q:"According to Jackson, which phase of teaching is the actual teaching-learning process involving questioning and guidance?", options:["Pre-active phase","Post-active phase","Interactive phase","Reflective phase"], answer:2},
+{unit:"Unit 2", q:"Which phase of teaching involves winding up and checking if objectives were achieved?", options:["Pre-active phase","Interactive phase","Post-active phase","Preparatory phase"], answer:2},
+{unit:"Unit 2", q:"Which maxim of teaching suggests moving from simple to complex content?", options:["Simple to complex","Complex to simple","Whole to part","Abstract to concrete"], answer:0},
+{unit:"Unit 2", q:"Which maxim of teaching suggests moving from concrete to abstract content?", options:["Abstract to concrete","Concrete to abstract","Known to unknown","Particular to general"], answer:1},
+{unit:"Unit 2", q:"According to Hokanson and Hooper, which level of teaching involves one-way communication as the learner receives information?", options:["Level II: Application","Level III: Extension","Level IV: Creation","Level I: Reception"], answer:3},
+{unit:"Unit 2", q:"According to Hokanson and Hooper, which level of teaching involves the learner solving problems independently?", options:["Level I: Reception","Level IV: Creation","Level II: Application","Level III: Extension"], answer:1},
+{unit:"Unit 2", q:"According to Hokanson and Hooper, which level of teaching has the learner adopting an exploratory attitude to challenge their own limits?", options:["Level V: Challenge","Level IV: Creation","Level III: Extension","Level II: Application"], answer:0},
+{unit:"Unit 2", q:"Which characteristic of teaching involves teacher-student, student-student, and student-material engagement?", options:["Dynamic","Professional","Interactive","Goal-oriented"], answer:2},
+// ===== UNIT 3 =====
+{unit:"Unit 3", q:"According to Sivakumar (2017), a learning theory attempts to describe what?", options:["How people learn by examining internal and external influences","How teachers grade student assignments","How schools design their curricula","How classrooms are physically arranged"], answer:0},
+{unit:"Unit 3", q:"Which learning theory is based on stimulus-response and views the learner as reactive rather than an active discoverer?", options:["Cognitivism","Behaviorism","Constructivism","Connectivism"], answer:1},
+{unit:"Unit 3", q:"In classical conditioning, what does food naturally and reflexively produce?", options:["A bell sound (neutral stimulus)","A conditioned response","Salivation (unconditioned response)","An operant behaviour"], answer:2},
+{unit:"Unit 3", q:"In classical conditioning, what happens when a bell is paired repeatedly with food?", options:["The bell becomes an unconditioned stimulus","The food loses its effect","The bell becomes a conditioned stimulus","The salivation response disappears"], answer:2},
+{unit:"Unit 3", q:"In operant conditioning, what term describes verbal praise or rewards that strengthen behaviour?", options:["Positive reinforcement","Negative reinforcement","Punishment","Neutral reinforcement"], answer:0},
+{unit:"Unit 3", q:"In operant conditioning, what term describes removing an unpleasant condition to strengthen behaviour?", options:["Positive reinforcement","Punishment","Negative reinforcement","Extinction"], answer:2},
+{unit:"Unit 3", q:"In Skinner's mouse experiment, what happened when the mouse accidentally pressed the lever?", options:["Food dropped, strengthening the connection over repetitions","The mouse received a mild shock","The box door opened immediately","Nothing changed in the mouse's behaviour"], answer:0},
+{unit:"Unit 3", q:"Who are among the founders of cognitivism mentioned in the text?", options:["Ulric Neisser, Noam Chomsky, and Jean Piaget","Pavlov, Thorndike, and Skinner","Dewey, Vygotsky, and Boud","Gagn\u00e9, Bruner, and Schuman"], answer:0},
+{unit:"Unit 3", q:"Which cognitivist principle involves integrating new knowledge via assimilation or accommodation?", options:["Schema theory","Cognitive load theory","Dual coding theory","Transfer of learning"], answer:0},
+{unit:"Unit 3", q:"Which cognitivist model describes information moving through sensory memory, working memory, and long-term memory?", options:["Schema Theory","Dual Coding Theory","Information Processing Model","Scaffolding Model"], answer:2},
+{unit:"Unit 3", q:"Which cognitivist principle emphasizes avoiding overload and using chunking?", options:["Schema Theory","Metacognition","Transfer of Learning","Cognitive Load Theory"], answer:3},
+{unit:"Unit 3", q:"Which cognitivist principle suggests that verbal and visual formats together improve retention?", options:["Dual Coding Theory","Schema Theory","Cognitive Load Theory","Meaningful Learning"], answer:0},
+{unit:"Unit 3", q:"Who initiated constructivism, according to the text?", options:["B.F. Skinner","Ivan Pavlov","Ulric Neisser","Jean Piaget"], answer:3},
+{unit:"Unit 3", q:"In constructivism, what role does the teacher take on?", options:["Sole source of knowledge","Coach or facilitator","Strict disciplinarian","Passive observer"], answer:1},
+{unit:"Unit 3", q:"Which tenet of constructivism emphasizes that learning should be contextually relevant to the learner?", options:["Learning should be memorization-focused","Learning should be teacher-directed only","Learning should follow a fixed sequence","Learning should be contextually relevant to the learner"], answer:3},
+{unit:"Unit 3", q:"Which of the following is listed as an impact of constructivism on teaching?", options:["Designing multidimensional learning scenarios","Eliminating all group activities","Focusing solely on rote memorization","Removing learner self-management"], answer:0},
+{unit:"Unit 3", q:"What assignment topic was given regarding theories not covered in depth in Unit 3?", options:["Connectivism and Social Learning Theory","Behaviorism and Classical Conditioning","Cognitivism and Schema Theory","Constructivism and Situated Cognition"], answer:0},
+{unit:"Unit 3", q:"Which key principle of evaluation in cognitivism emphasizes understanding over memorization?", options:["Speed of recall","Volume of content covered","Standardized testing only","Understanding over memorization"], answer:3},
+{unit:"Unit 3", q:"Which key principle of evaluation in cognitivism involves self-assessment and journals?", options:["Process-oriented assessment","Contextualized tasks","Metacognitive awareness","Understanding over memorization"], answer:2},
+{unit:"Unit 3", q:"According to behaviorism, what happens to responses followed by reinforcement?", options:["They are less likely to recur","They disappear immediately","They become unconditioned","They are more likely to recur"], answer:3},
+{unit:"Unit 3", q:"What is listed as the behaviorist teacher's role regarding cues?", options:["Ignore all environmental cues","Focus only on internal cognition","Determine cues that elicit desired responses","Avoid using reinforcement"], answer:2},
+{unit:"Unit 3", q:"In classical conditioning, what factor makes conditioning stronger and quicker?", options:["A longer interval between stimuli","Repeating the unconditioned stimulus alone","Removing the neutral stimulus early","A shorter interval between the conditioned and unconditioned stimulus"], answer:3},
+{unit:"Unit 3", q:"Which contributors to constructivism are mentioned alongside Piaget?", options:["Pavlov, Thorndike, and Hull","Dewey, Vygotsky, and Boud","Neisser, Chomsky, and Skinner","Gagn\u00e9, Bruner, and Eggen"], answer:1},
+// ===== UNIT 4 =====
+{unit:"Unit 4", q:"What term describes digital devices, platforms, systems, and applications that support teaching, learning, and school operations?", options:["Traditional instructional media","Manual teaching aids","Technology tools for classroom instruction","Analog learning systems"], answer:2},
+{unit:"Unit 4", q:"What does the acronym-style term 'Slide' originate from, according to the text?", options:["Chalkboard writing days","Typewriter document pages","Early television broadcasts","Overhead-projector days"], answer:3},
+{unit:"Unit 4", q:"Which feature of modern presentation tools allows decks to be generated from documents or prompts?", options:["Visual design flexibility","Multimedia support","Manual slide numbering","AI-powered creation"], answer:3},
+{unit:"Unit 4", q:"In PowerPoint's interface, where are slide thumbnails typically located?", options:["Task Panes, on the right","Ribbon, at the top","Slides Pane, on the left","Notes Pane, below the slide area"], answer:2},
+{unit:"Unit 4", q:"What does the 5-5-5 rule in PowerPoint recommend for lines per slide?", options:["10 lines per slide","5 lines per slide","3 lines per slide","7 lines per slide"], answer:1},
+{unit:"Unit 4", q:"In what year was Google Slides introduced by Google?", options:["2003","2007","2010","2015"], answer:1},
+{unit:"Unit 4", q:"What is a key advantage of Google Slides related to file saving?", options:["Requiring manual saves every few minutes","No cloud backup available","Only single-user editing allowed","Automatic saving without manual intervention"], answer:3},
+{unit:"Unit 4", q:"Who developed Prezi and in what year?", options:["Bill Gates and Paul Allen in 1990","Larry Page and Sergey Brin in 2007","Steve Jobs and Steve Wozniak in 1985","Adam Somlai-Fischer, Peter Halacsy, and Peter Arvai in 2009"], answer:3},
+{unit:"Unit 4", q:"What interface feature distinguishes Prezi from traditional slide-based software?", options:["Zoomable User Interface (ZUI)","Sequential slide-only navigation","Fixed template locking","Offline-only editing"], answer:0},
+{unit:"Unit 4", q:"What is listed as a limitation of Prezi related to its interface?", options:["Complete lack of multimedia support","No cloud storage option","A steeper learning curve than traditional slides","Inability to add hyperlinks"], answer:2},
+{unit:"Unit 4", q:"Which best practice is recommended for all presentation tools discussed (PowerPoint, Google Slides, Prezi)?", options:["Add as many animations as possible","Use only one long slide for all content","Avoid rehearsing before delivery","Identify objectives first before designing the presentation"], answer:3},
+{unit:"Unit 4", q:"What limitation is common to both Google Slides and Prezi regarding connectivity?", options:["They depend on internet access for full functionality","They cannot be used with any internet connection","They require no internet at all","They only work on desktop computers"], answer:0},
+{unit:"Unit 4", q:"According to the text, what is one benefit of PowerPoint related to file formats?", options:["Exclusive use of proprietary hardware","Requirement of a printed copy always","Portability through formats like .pptx and .pdf","Inability to export to other formats"], answer:2},
+{unit:"Unit 4", q:"What is emphasized as the core focus of interactive teaching?", options:["One-way transmission of information","Strict memorization of content","Individual isolated study only","Two-way communication between teacher and learners"], answer:3},
+{unit:"Unit 4", q:"Which characteristic of interactive teaching involves cooperative learning and teamwork skills?", options:["Collaboration","Active Participation","Immediate Feedback","Technology Integration"], answer:0},
+{unit:"Unit 4", q:"Which characteristic of interactive teaching involves prompt responses that help identify mistakes?", options:["Immediate Feedback","Collaboration","Communication","Learner-Centeredness"], answer:0},
+{unit:"Unit 4", q:"What theory grounds the use of Interactive Whiteboards, emphasizing active knowledge construction?", options:["Behaviorist theory","Constructivist theory","Connectivist theory","Trait theory"], answer:1},
+{unit:"Unit 4", q:"When did Interactive Whiteboards first emerge, initially for business presentations?", options:["Late 1970s","Early 1990s","Mid-2000s","Early 2010s"], answer:1},
+{unit:"Unit 4", q:"Which component of an Interactive Whiteboard system processes data and runs the software?", options:["The interactive pen","The computer","The digital projector","The display board surface"], answer:1},
+{unit:"Unit 4", q:"What is listed as a major limitation of Interactive Whiteboards?", options:["Complete inability to display multimedia","No support for touch interaction","Lack of any educational software","High cost of installation and maintenance"], answer:3},
+{unit:"Unit 4", q:"Which theories ground Audio/Audience Response Systems, according to the text?", options:["Constructivist theory and social learning theory","Behaviorist theory and trait theory","Cognitivist theory and humanism","Connectivism and psychoanalytic theory"], answer:0},
+{unit:"Unit 4", q:"What historical technology did Audio Response Systems trace back to?", options:["Tape recorders and language laboratories","Overhead projectors and slide film","Typewriters and telegraphs","Chalkboards and printed textbooks"], answer:0},
+{unit:"Unit 4", q:"What is listed as a limitation of Audio Response Systems related to learners?", options:["Complete absence of feedback options","Total incompatibility with smartphones","Requirement of in-person only recording","Learner anxiety about recording their voice"], answer:3}
+];
+
+
+const ECO102_QUESTIONS = [
+{unit:"ECO 102", q:"What is money?", options:["Gold and silver coins", "Anything widely accepted as medium of exchange", "Anything with intrinsic value", "Paper currency only"], answer:1},
+{unit:"ECO 102", q:"Which is the main function of money?", options:["Unit of account", "Medium of exchange", "Wealth indicator", "Store of value"], answer:1},
+{unit:"ECO 102", q:"What does it mean for money to be a store of value?", options:["Money can be saved and used later", "Money never loses purchasing power", "Money is backed by government", "Money increases in value over time"], answer:0},
+{unit:"ECO 102", q:"Which is an example of commodity money?", options:["Credit cards", "Gold coins", "Paper naira notes", "Digital bank money"], answer:1},
+{unit:"ECO 102", q:"What is fiat money?", options:["Government-declared money not backed by commodity", "Money backed by gold", "Money with intrinsic value", "Money used only in trade"], answer:0},
+{unit:"ECO 102", q:"What is money supply?", options:["Amount of money in banks only", "Gold reserves", "Government's spending power", "Total amount of money in circulation"], answer:3},
+{unit:"ECO 102", q:"Why do people hold money for transactions?", options:["To take advantage of investment opportunities", "To avoid risk", "To pay for daily goods and services", "To earn interest"], answer:2},
+{unit:"ECO 102", q:"What is precautionary demand for money?", options:["Money held to avoid taxes", "Money held to meet unexpected expenses", "Money held for business operations", "Money held to speculate"], answer:1},
+{unit:"ECO 102", q:"Why hold money for speculative reasons?", options:["To take advantage of investment opportunities based on interest rate expectations", "To save for retirement", "To earn wages", "To pay taxes"], answer:0},
+{unit:"ECO 102", q:"What happens to interest rates when money supply increases?", options:["Interest rates decrease", "Interest rates become unpredictable", "Interest rates stay the same", "Interest rates increase"], answer:0},
+{unit:"ECO 102", q:"What is velocity of money?", options:["Interest rate on savings", "Speed at which prices change", "Number of times money is used in transactions per year", "Amount of money in savings"], answer:2},
+{unit:"ECO 102", q:"In the equation M × V = P × Q, what does P represent?", options:["Personal income", "Price level", "Production capacity", "Profit"], answer:1},
+{unit:"ECO 102", q:"What causes inflation?", options:["Strong currency", "High interest rates", "Too little money in circulation", "Excessive money growth relative to output"], answer:3},
+{unit:"ECO 102", q:"Which tool can central bank use to increase money supply?", options:["Sell government securities", "Buy government securities", "Raise reserve requirements", "Raise discount rate"], answer:1},
+{unit:"ECO 102", q:"When is expansionary monetary policy used?", options:["During recession and high unemployment", "To prevent asset bubbles", "When economy overheating", "During high inflation"], answer:0},
+{unit:"ECO 102", q:"What is GDP?", options:["Total income of nationals worldwide", "Total value of goods and services produced within a country's borders", "Total exports minus imports", "Total government spending"], answer:1},
+{unit:"ECO 102", q:"What is GNP?", options:["Total value produced within borders", "Government spending", "Total value produced by nationals regardless of location", "Only value of exports"], answer:2},
+{unit:"ECO 102", q:"What is the key difference between GDP and GNP?", options:["No real difference", "GDP is larger", "GDP is location-based, GNP is citizenship-based", "GNP includes illegal activities"], answer:2},
+{unit:"ECO 102", q:"How is NDP calculated?", options:["Income minus consumption", "GDP plus capital depreciation", "GNP minus taxes", "GDP minus capital depreciation"], answer:3},
+{unit:"ECO 102", q:"What is national income?", options:["Government revenue", "Total income earned by all factors of production", "Personal income before taxes", "Income of government only"], answer:1},
+{unit:"ECO 102", q:"National income includes which of these?", options:["Wages, rent, interest, profit", "Only government spending", "Only wages", "Only consumption"], answer:0},
+{unit:"ECO 102", q:"What is per capita income?", options:["Income of richest person", "Average income per person in population", "Total national income", "Government income"], answer:1},
+{unit:"ECO 102", q:"When is GNP greater than GDP?", options:["When government spending increases", "When more nationals work abroad than foreigners in country", "Never", "Always"], answer:1},
+{unit:"ECO 102", q:"What is personal income?", options:["Only wage income", "Income after all taxes", "Government transfers only", "Income before direct taxes"], answer:3},
+{unit:"ECO 102", q:"What is disposable income?", options:["Savings only", "Income earned", "Income after direct taxes", "Government assistance"], answer:2},
+{unit:"ECO 102", q:"How is DI calculated from PI?", options:["DI = PI / Taxes", "DI = PI - Taxes", "DI = PI × Taxes", "DI = PI + Taxes"], answer:1},
+{unit:"ECO 102", q:"What can people do with disposable income?", options:["Only save it", "Only spend it", "Give to government", "Consume or save it"], answer:3},
+{unit:"ECO 102", q:"What better measures standard of living than just income?", options:["GDP only", "Total population", "HDI, Gini coefficient, life expectancy", "Government policies"], answer:2},
+{unit:"ECO 102", q:"What is real income?", options:["Income before taxes", "Actual amount earned", "Income in foreign currency", "Income adjusted for inflation"], answer:3},
+{unit:"ECO 102", q:"What problem exists with using average income?", options:["It doesn't show inequality", "It's too high", "It's always accurate", "Everyone earns same"], answer:0},
+{unit:"ECO 102", q:"Is saving a stock or flow?", options:["Neither", "Flow", "Both equally", "Stock"], answer:1},
+{unit:"ECO 102", q:"What is Average Propensity to Consume?", options:["Total consumption", "All income spent", "Portion of income spent on consumption", "Investment only"], answer:2},
+{unit:"ECO 102", q:"What is Average Propensity to Save?", options:["Investment return", "Portion of income saved", "Total savings", "Money in bank"], answer:1},
+{unit:"ECO 102", q:"What is APC + APS equal to?", options:["2", "Varies by income", "0", "1"], answer:3},
+{unit:"ECO 102", q:"Why does APC + APS always equal 1?", options:["All income is consumed or saved, nothing else", "Banks set it", "Government requires it", "Random occurrence"], answer:0},
+{unit:"ECO 102", q:"How do lower interest rates affect investment?", options:["Increase investment", "Only affect savings", "Decrease investment", "No effect"], answer:0},
+{unit:"ECO 102", q:"When firms are optimistic about future, what happens?", options:["They invest less", "No change", "They invest more", "They save instead"], answer:2},
+{unit:"ECO 102", q:"How do higher expected profits affect investment?", options:["No effect", "Increase investment", "Encourage saving", "Reduce investment"], answer:1},
+{unit:"ECO 102", q:"What does new technology do to investment?", options:["Decreases it", "Increases it (firms need to invest to stay competitive)", "Stops it", "No effect"], answer:1},
+{unit:"ECO 102", q:"How do tax breaks for investment affect investment?", options:["Reduce investment", "No effect", "Move investment abroad", "Increase investment"], answer:3},
+{unit:"ECO 102", q:"When firms have excess capacity, what happens to investment?", options:["Increases significantly", "Stays same", "Decreases (less need for new capital)", "Goes negative"], answer:2},
+{unit:"ECO 102", q:"What is capital stock?", options:["Government spending", "Investment per year", "Value of stocks owned", "Total amount of physical capital in economy"], answer:3},
+{unit:"ECO 102", q:"What is accelerator effect in investment?", options:["Speed of money circulation", "Acceleration of cars", "Higher interest rates accelerate spending", "Rising output increases need for capital (investment)"], answer:3},
+{unit:"ECO 102", q:"How do business-friendly policies affect investment?", options:["No effect", "Only affect consumption", "Decrease investment", "Increase investment"], answer:3},
+{unit:"ECO 102", q:"When inflation is expected to rise, firms likely:", options:["Delay investment", "Stop investing", "Invest in foreign countries", "Invest now (before prices rise)"], answer:3},
+{unit:"ECO 102", q:"What problem does GDP have with non-market activities?", options:["Counts them correctly", "Doesn't count them (housework, volunteering)", "Overestimates them", "Counts them twice"], answer:1},
+{unit:"ECO 102", q:"What is double counting problem?", options:["Counting same product at different stages", "Counting each transaction twice", "Government counting twice", "Counting exports and imports"], answer:0},
+{unit:"ECO 102", q:"How does GDP handle illegal market activities?", options:["Government estimates them", "Includes them", "Counts half of them", "Excludes them"], answer:3},
+{unit:"ECO 102", q:"What problem does GDP have with environment?", options:["Counts it correctly", "Counts resource extraction as income but doesn't subtract environmental costs", "Ignores all environmental issues", "Underestimates environment value"], answer:1},
+{unit:"ECO 102", q:"What doesn't GDP measure?", options:["Economic activity", "Quality of life, health, happiness", "Production value", "Exports"], answer:1},
+{unit:"ECO 102", q:"What problem exists with GDP regarding distribution?", options:["Only counts poor", "Only counts rich", "Shows average but not how divided among people", "Shows exact distribution"], answer:2},
+{unit:"ECO 102", q:"How does GDP handle leisure time?", options:["Counts it as negative (less work = lower GDP even though more free time)", "Ignores it", "Overvalues it", "Values it correctly"], answer:0},
+{unit:"ECO 102", q:"What are transfer payments in context of GDP?", options:["Payments like pensions, welfare (not counted in GDP but people spend them)", "Payments for goods", "Government spending", "Payments for services"], answer:0},
+{unit:"ECO 102", q:"What problem exists with nominal GDP?", options:["Doesn't measure production", "Always reliable", "Can increase just from price rises, not actual production increase", "Too accurate"], answer:2},
+{unit:"ECO 102", q:"How are government services (police, education) valued in GDP?", options:["At their cost (what government spent)", "At market price", "Not possible", "Not valued"], answer:0},
+{unit:"ECO 102", q:"What problem exists with owner-occupied housing in GDP?", options:["Counted twice", "Ignored completely", "Value imputed (estimated), not based on actual transaction", "Not counted"], answer:2},
+{unit:"ECO 102", q:"How is double counting problem solved?", options:["Don't count manufacturing", "Count only final goods/services or value added at each stage", "Only count exports", "Count each transaction"], answer:1},
+{unit:"ECO 102", q:"What percentage of some economies is black market?", options:["0%", "100%", "20-40%", "5%"], answer:2},
+{unit:"ECO 102", q:"Which is better measure of development than GDP?", options:["Money supply", "Population", "Inflation rate", "HDI (Human Development Index)"], answer:3},
+{unit:"ECO 102", q:"What does ANNI do?", options:["GDP minus environmental damage and resource depletion", "Adds services", "Increases GDP", "Same as GDP"], answer:0},
+{unit:"ECO 102", q:"Which is a stock?", options:["Saving per month", "Wealth at a point in time", "Income per year", "Consumption per quarter"], answer:1},
+{unit:"ECO 102", q:"Is saving a stock or flow?", options:["Both", "Stock", "Flow", "Neither"], answer:2},
+{unit:"ECO 102", q:"What does acceptability mean for money?", options:["Government accepts it", "Rare and valuable", "Bank accepts it", "Widely accepted as payment"], answer:3},
+{unit:"ECO 102", q:"Why is portability important for money?", options:["Historical reason", "Heavy objects valuable", "Must be easy to carry and transport", "Government requirement"], answer:2},
+{unit:"ECO 102", q:"What does divisibility mean for money?", options:["Banks divide deposits", "Can be divided into smaller units without loss of value", "Hard to divide", "Money divides people"], answer:1},
+{unit:"ECO 102", q:"Why must money be scarce?", options:["Historical accident", "Make rich people richer", "Government requirement", "Maintain value"], answer:3},
+{unit:"ECO 102", q:"What does durability mean for money?", options:["Withstands use without deteriorating", "Money must last long", "Never gets old", "Can't be worn out"], answer:0},
+{unit:"ECO 102", q:"What is fungibility?", options:["Money can be shaped", "All units identical and interchangeable", "Makes things possible", "Money flows freely"], answer:1},
+{unit:"ECO 102", q:"Why is recognizability important?", options:["Government likes it", "Looks nice", "Historical reason", "Prevents counterfeiting and fraud"], answer:3},
+{unit:"ECO 102", q:"Which characteristic does gold NOT have well?", options:["Scarcity", "Durability", "Fungibility", "Portability (hard to carry large amounts)"], answer:3},
+{unit:"ECO 102", q:"What is representative money?", options:["Modern currency", "Barter system", "Paper with pictures", "Paper certificates backed by commodity (like gold)"], answer:3},
+{unit:"ECO 102", q:"What is M1 money supply?", options:["Savings accounts", "Investments", "All money in country", "Cash and checking accounts (highly liquid)"], answer:3},
+{unit:"ECO 102", q:"What is M2?", options:["M1 plus savings accounts and other liquid assets", "M1 only", "Foreign currency", "Government money"], answer:0},
+{unit:"ECO 102", q:"How does higher interest rate affect money demand?", options:["Unpredictable", "No effect", "Decreases it (people prefer bonds)", "Increases it"], answer:2},
+{unit:"ECO 102", q:"What is deflation?", options:["Currency weakness", "Decrease in general price level", "Decrease in money supply", "Economic recession"], answer:1},
+{unit:"ECO 102", q:"What does hyperinflation do?", options:["Helps savers", "Encourages borrowing", "Makes money worthless", "Increases savings"], answer:2},
+{unit:"ECO 102", q:"When central bank buys securities, what happens?", options:["Money supply increases", "Prices fall", "Money supply decreases", "Interest rates increase"], answer:0},
+{unit:"ECO 102", q:"When central bank lowers reserve requirement:", options:["Interest rates rise", "Banks can lend more (money supply increases)", "Investment decreases", "Banks must hold more"], answer:1},
+{unit:"ECO 102", q:"What is discount rate?", options:["Inflation rate", "Sale price", "Growth rate", "Interest rate charged to banks borrowing from central bank"], answer:3},
+{unit:"ECO 102", q:"When is contractionary policy used?", options:["During high inflation", "During recession", "When unemployment high", "To increase spending"], answer:0},
+];
+
+const ETL114_QUESTIONS = [
+{unit:"ETL 114", q:"What is a digital library?", options:["Physical library with computers", "Organized collection of digital resources accessible through networks", "Database of books", "Website about libraries"], answer:1},
+{unit:"ETL 114", q:"Which materials are available in digital format in digital libraries?", options:["Journals, books, newspapers, photographs, pictures, videos, music", "Text only", "Audio recordings only", "Books only"], answer:0},
+{unit:"ETL 114", q:"What does digital library do at creation?", options:["Files information manually", "Prints information", "Captures information at creation", "Stores in physical format"], answer:2},
+{unit:"ETL 114", q:"What advantage does digital format provide?", options:["Same space as physical", "Requires less physical space", "Requires more space", "Needs buildings"], answer:1},
+{unit:"ETL 114", q:"How is content distributed in digital libraries?", options:["Only in one building", "Across multiple servers", "One central server", "Only locally"], answer:1},
+{unit:"ETL 114", q:"What does digital library do with content?", options:["Loses it overtime", "Lets it deteriorate", "Maintains and preserves it", "Sells it"], answer:2},
+{unit:"ETL 114", q:"What is simple search?", options:["Librarian assisted", "Advanced Boolean", "Complex search", "Basic keyword search"], answer:3},
+{unit:"ETL 114", q:"What does advanced search include?", options:["One word only", "Boolean operators (AND, OR, NOT)", "By price", "Simple keywords"], answer:1},
+{unit:"ETL 114", q:"What do wildcards do in searching?", options:["Block results", "Delete searches", "Show all books", "Match partial terms"], answer:3},
+{unit:"ETL 114", q:"How do you search for exact phrase?", options:["Use quotation marks", "Underline", "Just type words", "Bold the words"], answer:0},
+{unit:"ETL 114", q:"Which is hardware in digital library?", options:["Servers, computers, storage devices", "Network protocols", "Databases", "Software"], answer:0},
+{unit:"ETL 114", q:"What does OCR do?", options:["Creates images", "Deletes text", "Stores files", "Converts scanned images to searchable text"], answer:3},
+{unit:"ETL 114", q:"What is Digital Rights Management?", options:["Software for users", "Internet protocol", "Managing libraries", "Technology protecting digital content from unauthorized use"], answer:3},
+{unit:"ETL 114", q:"Which is a digital library platform?", options:["Zoom", "Microsoft Word", "Gmail", "DSpace, Greenstone, Fedora"], answer:3},
+{unit:"ETL 114", q:"Which is type of online database?", options:["Telephone directory", "Business registry", "Indexing, reference, full-text, statistical databases", "Social media"], answer:2},
+{unit:"ETL 114", q:"What is Web OPAC?", options:["Website design", "Computer system", "Physical library catalog", "Online catalog accessible through internet using browsers"], answer:3},
+{unit:"ETL 114", q:"Which can be used to access Web OPAC?", options:["Only Internet Explorer", "Any common browser (Microsoft Explorer, Chrome, Google)", "Only specialized software", "Telephone"], answer:1},
+{unit:"ETL 114", q:"What do current awareness services do?", options:["Prevent access", "Archive old materials", "Hide new materials", "Draw attention to current resources of interest to users"], answer:3},
+{unit:"ETL 114", q:"What benefit do current awareness services provide?", options:["Limit access", "Increase costs", "Help users learn research attitudes and stay informed", "Reduce library use"], answer:2},
+{unit:"ETL 114", q:"What is Selective Dissemination of Information?", options:["Service based on identified user interests, sending customized information", "Random distribution", "Marketing service", "Distributing all information equally"], answer:0},
+{unit:"ETL 114", q:"When SDI sends current information, what does it do?", options:["Charges fee", "Delays it", "Requires visit", "Library staff monitor and send electronically or alerts"], answer:3},
+{unit:"ETL 114", q:"When user needs non-current information, what happens?", options:["Waits months", "Charges more", "Both current and older information packaged for user", "Refuses service"], answer:2},
+{unit:"ETL 114", q:"What do electronic libraries provide?", options:["Online reference sources and search assistance", "Private collections", "No services", "Physical books only"], answer:0},
+{unit:"ETL 114", q:"What does www.about.com offer?", options:["Legal services", "Medical advice", "Books for sale", "Predefined categories related to search topics"], answer:3},
+{unit:"ETL 114", q:"What are digital reference services?", options:["Books only", "Internet-based question and answer services connecting users with expertise", "Physical reference only", "Old library services"], answer:1},
+{unit:"ETL 114", q:"What is asynchronous digital reference tool?", options:["Phone calls", "Email, FAQ, subject gateway (not real-time)", "In-person", "Real-time chat"], answer:1},
+{unit:"ETL 114", q:"What is interactive digital reference?", options:["Chat room, virtual reference desk, video conferencing (real-time)", "Email only", "Slow service", "Letters"], answer:0},
+{unit:"ETL 114", q:"What does ask a librarian service do?", options:["Ignores questions", "Only during business hours", "Allows users to send formatted enquiries to reference librarian", "Charges high fees"], answer:2},
+{unit:"ETL 114", q:"How are digital reference services provided?", options:["Email only", "In person", "Phone only", "Email, web forms, online chat, video conferencing, collaborative reference"], answer:3},
+{unit:"ETL 114", q:"What is DRS service for libraries?", options:["Outdated", "Expensive cost", "Only for large libraries", "One of essential services provided by modern libraries"], answer:3},
+{unit:"ETL 114", q:"What does OPAC stand for?", options:["Open Public Archive Card", "Online Public Access Catalog", "Online Public Access Card", "Online Personal Access Code"], answer:1},
+{unit:"ETL 114", q:"What is primary purpose of OPAC?", options:["Sell books", "Restrict access", "Enable users to know available collections and search catalog", "Delete records"], answer:2},
+{unit:"ETL 114", q:"What can users do with OPAC?", options:["Borrow without visiting", "Only browse", "Modify records", "Search, check availability, find location, view details"], answer:3},
+{unit:"ETL 114", q:"What does OPAC availability check show?", options:["Only borrowed items", "Author information", "Price", "If item available or checked out with return dates"], answer:3},
+{unit:"ETL 114", q:"What location information does OPAC provide?", options:["Call number and location/section", "Which shelf has item", "Zip code", "Directions to library"], answer:0},
+{unit:"ETL 114", q:"What can users do with unavailable items?", options:["Wait silently", "Nothing", "Complain only", "Place requests/holds on checked-out materials"], answer:3},
+{unit:"ETL 114", q:"What is simple OPAC search?", options:["Basic keyword search", "Boolean operators", "Complex query", "Author search only"], answer:0},
+{unit:"ETL 114", q:"What does advanced OPAC search allow?", options:["No options", "Keyword only", "Multiple fields, Boolean operators, date ranges, subject headings", "Title only"], answer:2},
+{unit:"ETL 114", q:"What is subject search in OPAC?", options:["By price", "By date", "Random results", "Browse by subject with controlled vocabulary"], answer:3},
+{unit:"ETL 114", q:"Which information does OPAC provide?", options:["Author location", "Seller information", "Title, author, publisher, publication date, ISBN", "Stock price"], answer:2},
+{unit:"ETL 114", q:"What access information does OPAC show?", options:["Price only", "Shipping", "Rental cost", "Call number, location, availability status, copy number"], answer:3},
+{unit:"ETL 114", q:"What content details does OPAC provide?", options:["Stock information", "Subject headings, summary, table of contents, related materials", "Price only", "Nothing"], answer:1},
+{unit:"ETL 114", q:"How does OPAC benefit users?", options:["No benefit", "Slows down research", "Find materials quickly, check availability before visiting, make informed decisions", "Makes research harder"], answer:2},
+{unit:"ETL 114", q:"How does OPAC benefit libraries?", options:["Track inventory, understand usage, serve more users, improve service", "Costs more", "Reduces service", "Makes work harder"], answer:0},
+{unit:"ETL 114", q:"What is OAU library OPAC address?", options:["www.oau.edu.ng", "oau.library.com", "ir.oauife.edu.ng (OAUSpace)", "oau-opac.org"], answer:2},
+{unit:"ETL 114", q:"How are digital library users different from physical library users?", options:["Must have skills to manipulate systems to find information", "Same with no difference", "Less capable", "Completely different"], answer:0},
+{unit:"ETL 114", q:"Which characterizes users?", options:["Only education", "Age, experience, job background, seniority", "Income only", "Only age"], answer:1},
+{unit:"ETL 114", q:"What are potential users?", options:["Those who need information service might provide", "Rich users", "Users using service right now", "Users who refuse service"], answer:0},
+{unit:"ETL 114", q:"What are expected users?", options:["Government users", "Users known to have intention of using certain services", "Rich users", "Random users"], answer:1},
+{unit:"ETL 114", q:"What are actual users?", options:["Staff only", "Those planning to use", "Those who actually used service regardless of benefit", "Those who never use"], answer:2},
+{unit:"ETL 114", q:"What are beneficiary users?", options:["Free users", "Those who derived measurable advantage from services", "Those who complained", "Anyone"], answer:1},
+{unit:"ETL 114", q:"Why should digital librarians use user profiling?", options:["To spy", "To charge more", "To ensure users have access to available information matching their needs", "To restrict access"], answer:2},
+{unit:"ETL 114", q:"What should users possess?", options:["Nothing specific", "Only reading ability", "Computer repair skills", "Ability to use different search strategies to gain required information"], answer:3},
+{unit:"ETL 114", q:"What helps digital library users?", options:["Being conversant with subject domain makes exploration easier", "High fees", "Age", "Nothing helps"], answer:0},
+{unit:"ETL 114", q:"What do digital library users desire?", options:["Uninterrupted access to collections and services regardless of where, format, or organization", "Expensive services", "Limited access", "Only physical materials"], answer:0},
+{unit:"ETL 114", q:"What is user unfriendliness problem?", options:["Libraries unfriendly", "No problem", "Complex interface results in non-use despite good information", "Users are unfriendly"], answer:2},
+{unit:"ETL 114", q:"How does complexity of interfaces affect users?", options:["No effect", "Affects usability and accessibility", "Helps them", "Improves searching"], answer:1},
+{unit:"ETL 114", q:"What problem exists with different search systems?", options:["No problem", "Helps users", "Complexity affects disability and usability", "Makes things easier"], answer:2},
+{unit:"ETL 114", q:"What is lack of knowledge problem?", options:["Users without skills can't use digital resources effectively", "Users too smart", "No problem", "Users know everything"], answer:0},
+{unit:"ETL 114", q:"What must readers possess?", options:["High IQ", "Basic skills to use electronic resources", "Engineering degree", "Nothing"], answer:1},
+{unit:"ETL 114", q:"What do inexperienced users need?", options:["Help and training to use e-journals and digital resources", "Nothing", "To be ignored", "Punishment"], answer:0},
+{unit:"ETL 114", q:"What is time commitment problem?", options:["Too much free time", "Online access is time-consuming to search, access, and read materials", "Instant access always", "No time needed"], answer:1},
+{unit:"ETL 114", q:"What technical problems affect systems?", options:["No problems", "Everything works perfectly", "No limitations", "Server downtime, slow speeds, broken links, crashes"], answer:3},
+{unit:"ETL 114", q:"What design issues affect systems?", options:["No issues", "Perfect design", "Always easy", "Complex interface, poor navigation, difficult search"], answer:3},
+{unit:"ETL 114", q:"What accessibility issues exist?", options:["Everything accessible", "Works for everyone", "Not compatible with assistive technology, poor mobile response, no alt-text", "No issues"], answer:2},
+{unit:"ETL 114", q:"What infrastructure challenges exist?", options:["Limited bandwidth, poor internet connection required, network bottlenecks", "No problems", "Unlimited capacity", "Perfect infrastructure"], answer:0},
+{unit:"ETL 114", q:"What maintenance issues exist?", options:["Always updated", "Outdated content, broken databases, poor indexing", "No issues", "Perfect maintenance"], answer:1},
+{unit:"ETL 114", q:"What security vulnerabilities exist?", options:["Never hacked", "Hacking risks, data loss, privacy breaches", "Perfectly secure", "No security issues"], answer:1},
+{unit:"ETL 114", q:"What performance problems arise?", options:["Perfect speed", "Slow response time, timeout errors, processing delays", "No delays", "Always instant"], answer:1},
+{unit:"ETL 114", q:"What impact do these challenges have?", options:["Users can't access resources effectively, leading to frustration and abandonment", "Help users", "Improve usage", "No impact"], answer:0},
+];
+
+const GST112_QUESTIONS = [
+{unit:"GST 112 - Geography", q:"What is Nigeria's total land mass?", options:["1,200,000 sq km", "923,768 sq km", "500,000 sq km", "750,000 sq km"], answer:1},
+{unit:"GST 112 - Geography", q:"Which country borders Nigeria to the North-West?", options:["Cameroon", "Chad", "Niger Republic", "Benin"], answer:2},
+{unit:"GST 112 - Geography", q:"Which two rivers are Nigeria's primary rivers?", options:["Osun and Ogun", "Kaduna and Gongola", "Sokoto and Yobe", "Niger and Benue"], answer:3},
+{unit:"GST 112 - Geography", q:"Which vegetational zone is found in the Far North and Middle Belt?", options:["Grassland/Savanna", "Mangrove", "Coastal/Riverine", "Forest"], answer:0},
+{unit:"GST 112 - Geography", q:"What does environmental determinism theory state?", options:["The physical environment shapes human societies and ways of life", "Only religion shapes society", "Culture shapes the environment", "Environment has no effect on society"], answer:0},
+{unit:"GST 112 - Geography", q:"Why did savanna peoples develop pastoralism?", options:["Government policy required it", "Grasslands suit cattle herding", "Rivers made herding easy", "Forest soil suited cattle"], answer:1},
+{unit:"GST 112 - Geography", q:"Kogi State's name is derived from a word meaning what?", options:["River", "Mountain", "Forest", "Valley"], answer:0},
+{unit:"GST 112 - Geography", q:"Which state's name comes from the Nupe name for the River Niger?", options:["Kogi", "Imo", "Delta", "Kwara"], answer:3},
+{unit:"GST 112 - Geography", q:"Which people are known as pastoral nomads herding cattle in the savanna region?", options:["Kanuri", "Fulani", "Jukun", "Hausa"], answer:1},
+{unit:"GST 112 - Geography", q:"What is the main agricultural activity in the forest region?", options:["Fishing only", "Cereal farming", "Cattle rearing", "Root crop agriculture (yam, cocoyam)"], answer:3},
+{unit:"GST 112 - Geography", q:"Which artifact is associated with the forest region's craftwork?", options:["Ife Terra Cotta", "Kano cloth", "Sokoto leatherwork", "Sahara pottery"], answer:0},
+{unit:"GST 112 - Geography", q:"What is the primary economic activity of coastal and riverine peoples?", options:["Mining", "Cattle herding", "Fishing", "Cereal farming"], answer:2},
+{unit:"GST 112 - Geography", q:"Roughly how many ethnic nationalities does Nigeria have?", options:["Exactly 250", "Over 400", "About 50", "Around 100"], answer:1},
+{unit:"GST 112 - Geography", q:"When was Islam introduced into Nigeria?", options:["20th century AD", "5th century AD", "8th century AD", "19th century AD"], answer:2},
+{unit:"GST 112 - Hausa", q:"In the Bayajidda legend, what problem did Bayajidda solve at Daura?", options:["A tyrannical snake blocking the water source", "A famine", "A civil war", "A trade dispute"], answer:0},
+{unit:"GST 112 - Hausa", q:"How many sons of Bawo founded the Hausa Bakwai states?", options:["Nine", "Five", "Six", "Seven"], answer:3},
+{unit:"GST 112 - Hausa", q:"Which Hausa Bakwai state was known as the commerce and trade center?", options:["Kano", "Biram", "Daura", "Gobir"], answer:0},
+{unit:"GST 112 - Hausa", q:"Which Hausa state combined trade with Islamic scholarship?", options:["Zazzau", "Gobir", "Rano", "Katsina"], answer:3},
+{unit:"GST 112 - Hausa", q:"Which Hausa state specialized in military defense against northern invaders like the Tuareg?", options:["Rano", "Kano", "Gobir", "Biram"], answer:2},
+{unit:"GST 112 - Hausa", q:"What is the title of the paramount ruler in Hausa society?", options:["Obong", "Aku Uka", "Attah", "Sarki"], answer:3},
+{unit:"GST 112 - Yoruba", q:"Who is the legendary first leader credited with leading the Yoruba to Ile-Ife?", options:["Eweka", "Bayajidda", "Oranmiyan", "Oduduwa"], answer:3},
+{unit:"GST 112 - Yoruba", q:"In the mythical Oke Oramfe account, what animal brought earth from heaven to spread over the water?", options:["A cockerel", "A snake", "A tortoise", "An elephant"], answer:0},
+{unit:"GST 112 - Yoruba", q:"Who was the paramount ruler of the Oyo Empire?", options:["Oyomesi", "Alaafin", "Bashorun", "Ogboni"], answer:1},
+{unit:"GST 112 - Yoruba", q:"How many members made up the Oyomesi royal council?", options:["Twelve", "Five", "Seven", "Nine"], answer:2},
+{unit:"GST 112 - Yoruba", q:"What was the primary role of the Ogboni cult in the Oyo Empire?", options:["Trade regulation", "Military command", "Mediation between Oyomesi and Alaafin, and spiritual judiciary", "Tax collection"], answer:2},
+{unit:"GST 112 - Yoruba", q:"Who led the Bashorun-headed council that could act as kingmakers in Oyo?", options:["The Oyomesi", "The Uzama", "The Ogboni", "The Sarauta"], answer:0},
+{unit:"GST 112 - Benin", q:"According to Egharevba's account, where did the Bini (Edo) people originate before settling in Benin?", options:["Nri", "Baghdad", "Cameroon", "Egypt, via Ile-Ife"], answer:3},
+{unit:"GST 112 - Benin", q:"Who was the Yoruba prince invited to rule Benin after the Ogiso era crisis?", options:["Eweka", "Oranmiyan", "Osanobua", "Oduduwa"], answer:1},
+{unit:"GST 112 - Benin", q:"Who founded the Eweka Dynasty that still rules Benin today?", options:["Osanobua", "Oduduwa", "Oranmiyan's son, Eweka", "Ogiso"], answer:2},
+{unit:"GST 112 - Benin", q:"In Benin's dual class system, what were the nobility called?", options:["Adesotu", "Ighiotu", "Umunna", "Talakawa"], answer:0},
+{unit:"GST 112 - Benin", q:"Which group of Benin nobility served as kingmakers?", options:["Eghaevbo n' Ore", "Uzama", "Ighiotu", "Eghaevbo n' Ogbe"], answer:1},
+{unit:"GST 112 - Igbo", q:"In the Nri version of Igbo origins, which ancestor descended from the sky and sailed down River Anambra?", options:["Abutu Eje", "Achadu", "Oduduwa", "Eri"], answer:3},
+{unit:"GST 112 - Igbo", q:"What term describes the Igbo village assembly where free adult males made decisions?", options:["Umunna", "Ekpe", "Ozo", "Oha"], answer:3},
+{unit:"GST 112 - Igbo", q:"What is Umunna in Igbo society?", options:["An age grade", "A secret society", "A titled society", "An extended family kinship group"], answer:3},
+{unit:"GST 112 - Igbo", q:"Which Igbo institution grants status through wealth and merit rather than heredity?", options:["Age grade", "Ozo titled society", "Umunna", "Village assembly"], answer:1},
+{unit:"GST 112 - Igbo", q:"What term describes the Igbo political structure of village, compound, and individual levels?", options:["Segmentary system", "Theocratic system", "Federal system", "Emirate system"], answer:0},
+{unit:"GST 112 - Efik", q:"What is the title of the Efik paramount ruler?", options:["Alaafin", "Attah", "Obong", "Aku Uka"], answer:2},
+{unit:"GST 112 - Efik", q:"Which secret society was the most powerful institution in Efik society?", options:["Ogboni", "Oyomesi", "Ozo", "Ekpe (Leopard society)"], answer:3},
+{unit:"GST 112 - Efik", q:"What was one of the main functions of the Ekpe society?", options:["Law enforcement and trade regulation", "Religious conversion", "Water supply management", "Farming coordination"], answer:0},
+{unit:"GST 112 - Efik", q:"Along which river did the Efik migrate before settling at Creek Town and Duke Town?", options:["Osun River", "Niger River", "Benue River", "Cross River"], answer:3},
+{unit:"GST 112 - Jukun", q:"What empire did the Jukun people found around the 16th-17th centuries?", options:["Sokoto Caliphate", "Kwarafa Empire", "Benin Empire", "Oyo Empire"], answer:1},
+{unit:"GST 112 - Jukun", q:"What was the title of the Jukun supreme ruler, viewed as a deity on earth?", options:["Aku Uka", "Attah", "Obong", "Sarki"], answer:0},
+{unit:"GST 112 - Jukun", q:"Where was the capital of the Jukun (Kwarafa) empire eventually based?", options:["Idah", "Daura", "Kano", "Wukari"], answer:3},
+{unit:"GST 112 - Jukun", q:"How did the Aku Uka typically communicate with commoners, given his ritual isolation?", options:["Via written decrees only", "Through public speeches", "Through television broadcasts", "From behind a screen"], answer:3},
+{unit:"GST 112 - Igala", q:"What is the title of the Igala paramount king, centered in Idah?", options:["Sarki", "Attah", "Aku Uka", "Obong"], answer:1},
+{unit:"GST 112 - Igala", q:"What council served as a check on the Attah's power and acted as kingmakers?", options:["Ekpe", "Igala Mela", "Ogboni", "Oyomesi"], answer:1},
+{unit:"GST 112 - Culture Zones", q:"Which culture zone is home to the Ijaw, Urhobo, and Itshekiri, known for fishing and woodcarving?", options:["Guinea Savanna", "Sudan Savanna", "Rain Forest", "Niger Delta"], answer:3},
+{unit:"GST 112 - Culture Zones", q:"Which culture zone is associated with sophisticated metallurgy like Ife Terra Cotta and Benin Bronzes?", options:["Niger Delta", "Rain Forest", "Sudan Savanna", "Guinea Savanna"], answer:1},
+{unit:"GST 112 - Culture Zones", q:"Which culture zone is described as having the highest ethnic diversity, home to Tiv, Nupe, and Ebira?", options:["Rain Forest", "Guinea Savanna/Middle Belt", "Sudan Savanna", "Niger Delta"], answer:1},
+{unit:"GST 112 - Culture Zones", q:"Which culture zone, home to the Hausa and Fulani, is known for leatherwork and dyed textiles?", options:["Niger Delta", "Rain Forest", "Guinea Savanna", "Sudan Savanna"], answer:3},
+];
+
+const ALL124_QUESTIONS = [
+{unit:"ALL 124 - Meaning of Family", q:"Why is there no single universally accepted definition of the family, according to Matsuki (2013)?", options:["Family structures and relationships differ across cultures and historical periods", "Families refuse to be defined", "Governments ban a fixed definition", "Sociologists have not studied the family enough"], answer:0},
+{unit:"ALL 124 - Meaning of Family", q:"Which discipline is NOT mentioned as one where the concept of family holds significant position?", options:["Psychology", "Sociology", "Anthropology", "Astronomy"], answer:3},
+{unit:"ALL 124 - Meaning of Family", q:"According to sociologists, what characterizes the family as a social group?", options:["Relatively permanent relationships and performance of important social functions", "Temporary relationships and no clear function", "Purely economic ties with no emotional bonds", "Random association of strangers"], answer:0},
+{unit:"ALL 124 - Meaning of Family", q:"Who defined family as a social group characterized by common residence, economic cooperation, and reproduction?", options:["Tribak (2024)", "MacIver and Page (1962)", "Murdock (1949)", "Burgess and Locke (1953)"], answer:2},
+{unit:"ALL 124 - Meaning of Family", q:"According to Murdock, the family typically includes which members?", options:["Only children", "Adults of both sexes and their children", "Distant relatives only", "Only the eldest male"], answer:1},
+{unit:"ALL 124 - Meaning of Family", q:"Burgess and Locke (1953) viewed the family as a group united by which ties?", options:["Financial contracts only", "Nationality alone", "Employment relationships", "Marriage, blood, or adoption, constituting a single household"], answer:3},
+{unit:"ALL 124 - Meaning of Family", q:"MacIver and Page (1962) defined family based on what kind of relationship?", options:["A business partnership", "A political alliance", "A religious congregation", "A sexual relationship sufficiently precise and enduring to provide for procreation and upbringing of children"], answer:3},
+{unit:"ALL 124 - Meaning of Family", q:"Mendenhall, Barker, and Kozlowski (2016) define family as a group related by blood, marriage, or adoption who share what?", options:["Emotional bonds, responsibilities, and resources", "Only a surname", "Legal documents alone", "Physical proximity only"], answer:0},
+{unit:"ALL 124 - Meaning of Family", q:"According to Scarf, O'Connor, and Smyth (2019), family is a social unit characterized by shared history, emotional ties, and what else?", options:["Geographic isolation", "Total independence of members", "Interdependence among its members", "Competitive rivalry"], answer:2},
+{unit:"ALL 124 - Meaning of Family", q:"According to Arcus and Schvaneveldt (1993), family life encompasses what kind of bonds?", options:["Emotional and social bonds involving belonging, commitment, and responsibility", "Purely legal bonds", "Financial bonds only", "Bonds based solely on shared property"], answer:0},
+{unit:"ALL 124 - Meaning of Family", q:"Crosby and Haslett (2002) describe family life as involving what kind of interdependence?", options:["No interdependence at all", "Political interdependence", "Emotional and material interdependence", "Only material interdependence"], answer:2},
+{unit:"ALL 124 - Meaning of Family", q:"White and Klein (2008) describe family life as encompassing the roles, responsibilities, and what else?", options:["Only financial obligations", "Legal contracts alone", "Government regulations", "Communication patterns and shared experiences that create a sense of family identity"], answer:3},
+{unit:"ALL 124 - Meaning of Family", q:"Which of these is listed as a modern family arrangement recognized by scholars beyond traditional definitions?", options:["Only extended families", "Only nuclear families", "Blended families", "None, only traditional families are recognized"], answer:2},
+{unit:"ALL 124 - Meaning of Family", q:"Which of the following is NOT listed as an important societal function of the family?", options:["Transmission of culture and values", "Reproduction of society", "Socialization of children", "Manufacturing of industrial goods"], answer:3},
+{unit:"ALL 124 - Meaning of Family", q:"The family is described as the primary environment for what process?", options:["Industrial production", "Birth, nurturing, socialization, and preparation for participation in society", "Political campaigning", "Only financial planning"], answer:1},
+{unit:"ALL 124 - Types of Family", q:"What is a nuclear family?", options:["Grandparents, uncles, aunts, and cousins living together", "A married couple without children", "Parents and their biological or adopted children", "One parent raising children alone"], answer:2},
+{unit:"ALL 124 - Types of Family", q:"What does an extended family include?", options:["Strangers living in the same house", "Only adopted children", "Only parents and children", "Grandparents, uncles, aunts, cousins, and other relatives"], answer:3},
+{unit:"ALL 124 - Types of Family", q:"A single-parent family is headed by one parent due to which circumstances?", options:["School enrollment", "Government assignment only", "Religious requirement", "Divorce, separation, death, or personal choice"], answer:3},
+{unit:"ALL 124 - Types of Family", q:"A blended family is formed when what happens?", options:["Grandparents move in temporarily", "A couple decides not to have children", "Two individuals with children from previous relationships establish a new family unit", "A child is adopted by strangers"], answer:2},
+{unit:"ALL 124 - Types of Family", q:"What describes a childless family?", options:["A married couple without children, by choice or circumstance", "A single-parent household", "A family with more than five children", "A family with only adopted children"], answer:0},
+{unit:"ALL 124 - Types of Family", q:"What is an adoptive family?", options:["A family formed when parents legally adopt a child and raise the child as a permanent member", "A family formed through marriage only", "A family that temporarily fosters children", "A family related only by blood"], answer:0},
+{unit:"ALL 124 - Types of Family", q:"What is a polygamous family?", options:["A family in which one individual is married to two or more spouses simultaneously", "A family without any spouse", "A family with only one spouse", "A family of only siblings"], answer:0},
+{unit:"ALL 124 - Types of Family", q:"In many African societies, what is the most common form of polygamy mentioned in the text?", options:["Group marriage with no distinction", "Polygynous family (a man with multiple wives)", "Polyandrous family (a woman with multiple husbands)", "Same-sex polygamy"], answer:1},
+{unit:"ALL 124 - Characteristics of Family", q:"Why is the family regarded as a universal institution?", options:["It is a recent invention", "It only exists in developed countries", "It exists only in rural areas", "It exists in all known societies and cultures"], answer:3},
+{unit:"ALL 124 - Characteristics of Family", q:"What is the emotional foundation of family relationships built on?", options:["Financial transactions", "Government mandates", "Legal contracts only", "Affection, love, care, and emotional attachment"], answer:3},
+{unit:"ALL 124 - Characteristics of Family", q:"Why is the family called the 'child's first school'?", options:["It serves as the primary agent of socialization, teaching language, values, and norms", "It only teaches religious doctrine", "It replaces the education system entirely", "It provides formal academic certificates"], answer:0},
+{unit:"ALL 124 - Characteristics of Family", q:"What does it mean that the family is a 'relatively permanent group'?", options:["Families never change membership", "Families dissolve after one generation", "Families exist only for a fixed number of years", "Individual members may leave or die, but the family as an institution continues across generations"], answer:3},
+{unit:"ALL 124 - Characteristics of Family", q:"What do family members share according to the text?", options:["Responsibilities relating to child-rearing, economic support, protection, and welfare", "Only genetic material", "Only financial debts", "Nothing in common"], answer:0},
+{unit:"ALL 124 - Characteristics of Family", q:"What does the family provide individuals in terms of identity?", options:["No sense of identity", "A temporary role that disappears at adulthood", "Social identity, status, and a feeling of belonging within society", "Only a legal name"], answer:2},
+{unit:"ALL 124 - Characteristics of Family", q:"According to Tribak (2024), why do sociologists regard the family as a fundamental social institution?", options:["It exists solely for entertainment", "It only matters for economic reasons", "It contributes to social stability and continuity by regulating relationships and transmitting culture", "It has no impact on society"], answer:2},
+{unit:"ALL 124 - Characteristics of Family", q:"What does the family remain, despite variations in structure across cultures and history?", options:["A purely legal construct with no social role", "The most fundamental unit of society and primary environment for human growth", "An outdated and irrelevant institution", "A structure found only in Western societies"], answer:1},
+{unit:"ALL 124 - Meaning of FLE", q:"According to NCFR (2017), what is the objective of Family Life Education?", options:["To replace the family entirely", "To enforce government policy on families", "To generate profit for institutions", "To enrich and improve the quality of individual and family life"], answer:3},
+{unit:"ALL 124 - Meaning of FLE", q:"According to Arcus and Schvaneveldt (2020), family life education provides individuals and families with what?", options:["Only financial literacy", "Only religious instruction", "Knowledge, skills, and attitudes needed to build healthy and fulfilling family relationships", "Only legal advice"], answer:2},
+{unit:"ALL 124 - Meaning of FLE", q:"According to Grotevant and Carlson (2019), FLE is a field of inquiry examining what?", options:["The nature of human development and family life, and how families can be strengthened through education", "Only marriage contracts", "Only historical family records", "Only government census data"], answer:0},
+{unit:"ALL 124 - Meaning of FLE", q:"FLE is described as an interdisciplinary field drawing on knowledge from which disciplines?", options:["Only literature and art", "Only law and medicine", "Psychology, sociology, anthropology, and education", "Only engineering and mathematics"], answer:2},
+{unit:"ALL 124 - Meaning of FLE", q:"Why did the pattern of informal learning about family living become inadequate, according to Olson, DeFrain, and Skogrand (2014)?", options:["Informal learning was banned by law", "Formal education replaced all informal methods immediately", "Families stopped caring about their children", "As societies change and become more complex, informal learning is no longer sufficient"], answer:3},
+{unit:"ALL 124 - Meaning of FLE", q:"What creates situations where teachings of previous generations are no longer sufficient?", options:["The loss of oral traditions alone", "A decline in population", "Development of new knowledge, advances in technology, and changing social and economic conditions", "Religious reform movements"], answer:2},
+{unit:"ALL 124 - Meaning of FLE", q:"According to NCFR, how is the goal of FLE achieved?", options:["Only through university degrees", "Only through government decrees", "Only through television broadcasts", "Through educational programs, counseling services, and community outreach"], answer:3},
+{unit:"ALL 124 - Meaning of FLE", q:"What approach does NCFR emphasize FLE should take?", options:["An approach that ignores family strengths", "A profit-driven commercial approach", "A purely punitive approach focused on problems", "A strengths-based approach focusing on positive aspects of family life"], answer:3},
+{unit:"ALL 124 - Purpose of FLE", q:"According to Thomas and Arcus (1992), what is the purpose of family life education?", options:["To generate revenue for schools", "To strengthen and enrich individual and family wellbeing", "To replace parents' authority", "To dissolve unstable families"], answer:1},
+{unit:"ALL 124 - Purpose of FLE", q:"Which of these is listed as a major objective of FLE by Arcus and Thomas (1993)?", options:["Eliminating all family conflict permanently", "Gaining insight into one's self and others", "Discouraging family communication", "Avoiding all interpersonal skills training"], answer:1},
+{unit:"ALL 124 - Purpose of FLE", q:"What is one major objective involving marital and family patterns?", options:["Understanding marital and family patterns and processes", "Studying only single people", "Focusing only on divorce statistics", "Ignoring marital patterns entirely"], answer:0},
+{unit:"ALL 124 - Purpose of FLE", q:"What is assumed will happen if FLE objectives are met?", options:["All families will become identical", "Family conflict will increase", "Families will become financially wealthy automatically", "Families will be better able to deal with or prevent problems"], answer:3},
+{unit:"ALL 124 - Purpose of FLE", q:"Family life education programmes are described as preventative, meaning what?", options:["They are designed only to punish dysfunctional families", "They only operate after a family crisis occurs", "They are intended to equip individuals for family roles rather than repair family dysfunction", "They focus solely on legal remedies"], answer:2},
+{unit:"ALL 124 - Purpose of FLE", q:"What is the first additional objective of FLE listed in the text?", options:["To discourage communication between generations", "To eliminate the family as an institution", "To develop knowledge regarding the concept of family, its roles and functions", "To promote financial competition between families"], answer:2},
+{unit:"ALL 124 - Purpose of FLE", q:"What does FLE aim to develop regarding family relationships and responsibility?", options:["The ability to deal with family relationship and responsibility", "Dependence on external authorities for all decisions", "Complete avoidance of responsibility", "Isolation from other family members"], answer:0},
+{unit:"ALL 124 - Purpose of FLE", q:"What life skills does FLE aim to develop, according to the text?", options:["Skills for legal litigation only", "Skills for avoiding all social participation", "Life skills to cope with different situations, including marriage and parenthood", "Skills only for economic competition"], answer:2},
+{unit:"ALL 124 - Purpose of FLE", q:"FLE aims to help individuals understand and cope with what?", options:["Only technological changes", "Changes in one's own life and changes in society", "Only changes in weather patterns", "Only changes in government policy"], answer:1},
+{unit:"ALL 124 - Purpose of FLE", q:"What does FLE aim to develop regarding one's own body?", options:["No knowledge about the body at all", "Knowledge about physiological processes, proper age of marriage, and contraception awareness", "Only knowledge about diet", "Only knowledge about exercise routines"], answer:1},
+{unit:"ALL 124 - Objectives of FLE", q:"What kind of citizens does FLE seek to create?", options:["Citizens isolated from community", "Citizens dependent entirely on government", "Citizens with no civic duties", "Responsible and useful young citizens"], answer:3},
+{unit:"ALL 124 - Content Areas of FLE", q:"Which key processes are incorporated into each content area of the Framework?", options:["Communication, decision making, and problem solving", "Only foreign language learning", "Only physical education", "Only mathematics and science"], answer:0},
+{unit:"ALL 124 - Content Areas of FLE", q:"What other terms are sometimes used to describe the same general content as family life education?", options:["Sex education, human relations education, personal development, and life skills education", "Only accounting and finance", "Only computer science", "Only civil engineering"], answer:0},
+{unit:"ALL 124 - Content Areas of FLE", q:"According to Arcus, Schvaneveldt, and Moss (1993), family life education is relevant to whom?", options:["Only elderly individuals", "Only children in school", "Individuals of all ages and all families regardless of structure or stage of life course", "Only married couples"], answer:2},
+{unit:"ALL 124 - Content Areas of FLE", q:"What distinguishes normative programmes from non-normative programmes in FLE?", options:["Non-normative programmes apply to everyone equally", "There is no distinction between them", "Normative programmes are illegal", "Normative programmes relate to typical developments like marriage or parenthood, while non-normative address special needs"], answer:3},
+{unit:"ALL 124 - FLE for Childhood", q:"What basic concepts need to be learned during childhood, according to Bredehoft (1997)?", options:["Only foreign languages", "Only physical fitness", "Developing a sense of self, learning right from wrong, and learning about family roles", "Only mathematics"], answer:2},
+{unit:"ALL 124 - FLE for Childhood", q:"In what setting are most family life education programmes for children provided in the United States?", options:["Only online platforms", "Only private tutoring", "School settings", "Only religious institutions"], answer:2},
+{unit:"ALL 124 - FLE for Childhood", q:"In 1947, what did the Japanese Ministry of Education mandate?", options:["Education only for boys", "The abolition of all family education", "Education for both boys and girls to prepare them for family roles, through Home Economics departments", "Education only for girls"], answer:2},
+{unit:"ALL 124 - FLE for Childhood", q:"What did the 2002 curriculum revision in Japan emphasize?", options:["Learning knowledge, gaining skills, increasing interest in daily family life", "Removing all references to family", "Eliminating Home Economics entirely", "Focusing only on foreign languages"], answer:0},
+{unit:"ALL 124 - FLE for Childhood", q:"In Australian primary schools, where was most human relations content integrated, according to Wolcott (1987)?", options:["Mathematics classes", "Health or Social Studies units", "Foreign language classes", "Physical education only"], answer:1},
+{unit:"ALL 124 - FLE for Childhood", q:"What percentage of adults in a U.S. nationwide poll supported sexuality education for adolescents, according to Advocates for Youth (1999)?", options:["25 percent", "10 percent", "93 percent", "50 percent"], answer:2},
+{unit:"ALL 124 - FLE for Adolescence", q:"What are the two important kinds of needs family life education addresses for adolescents?", options:["Only recreational needs", "Current normative needs and anticipatory future family-related needs", "Only academic needs", "Only financial needs"], answer:1},
+{unit:"ALL 124 - FLE for Adolescence", q:"What is the assumption underlying anticipatory family education, according to Hennon and Arcus (1993)?", options:["Preparation has no effect on adult outcomes", "Adolescents cannot learn about family roles", "Only adults can benefit from family education", "If adolescents are prepared for future family roles, their adult life experiences will be more successful"], answer:3},
+{unit:"ALL 124 - FLE for Adolescence", q:"What global concerns prompted attention to sexuality education/family planning worldwide?", options:["Only concerns about unemployment", "Only concerns about literacy rates", "Adolescent pregnancy, parenthood, and the emergence of HIV/AIDS", "Only concerns about climate change"], answer:2},
+{unit:"ALL 124 - FLE for Adolescence", q:"According to a UNESCO comparative study (Blanchard 1995), what topics should broaden traditional population education?", options:["Only foreign language study", "Reproductive health, status and empowerment of women, and problem-solving skills", "Only computer literacy", "Only agricultural techniques"], answer:1},
+{unit:"ALL 124 - FLE for Adolescence", q:"What did Engel, Saracino, and Bergen (1993) find many U.S. sexuality education curricular guides lacked?", options:["Comprehensive coverage, often omitting communication, decision making, and risk-reduction topics", "Too much detail on every topic", "Too many teachers involved", "Excessive funding"], answer:0},
+{unit:"ALL 124 - FLE for Adults", q:"What was the earliest form of family life education for adults?", options:["Preretirement financial planning", "Marriage enrichment retreats", "Online parenting forums", "Parent education, provided for mothers in organized groups"], answer:3},
+{unit:"ALL 124 - FLE for Adults", q:"According to Medway (1989), what does research indicate about parent education programmes?", options:["No one parent education programme is more effective than the others", "Parent education programmes have no measurable effects", "Only programmes developed in Japan are effective", "One single programme is proven superior to all others"], answer:0},
+{unit:"ALL 124 - FLE for Adults", q:"What are the two most widely used parent education programmes named in the text?", options:["Head Start and Sesame Street", "Systematic Training for Effective Parenting (STEP) and Parent Effectiveness Training (PET)", "Montessori and Waldorf", "IQ testing and aptitude screening"], answer:1},
+{unit:"ALL 124 - FLE for Adults", q:"When was marriage education first developed as a focus of family life education for adults?", options:["2000s in Nigeria", "1800s in France", "1990s in Japan", "1930s and 1940s in the United States and Great Britain"], answer:3},
+{unit:"ALL 124 - FLE for Adults", q:"In what decade did marriage enrichment emerge, according to the text?", options:["2010s, in Nigeria", "1960s, in Spain and the United States", "1920s, in Germany", "1980s, in Canada"], answer:1},
+{unit:"ALL 124 - Values in FLE", q:"What are values, as defined in the FLE material?", options:["Financial assets owned by a family", "Legal rules enforced by government", "Random personal opinions with no impact", "Beliefs and principles that guide behaviour and decision-making"], answer:3},
+{unit:"ALL 124 - Values in FLE", q:"According to Arcus and Schvaneveldt (1993), why is respect essential in FLE?", options:["It only matters in legal contracts", "It builds trust and establishes a positive relationship between educator and families", "It replaces the need for communication", "It has no real impact on relationships"], answer:1},
+{unit:"ALL 124 - Values in FLE", q:"According to Burton and Corkery (2018), what does empathy involve?", options:["Recognising and acknowledging the emotional experiences of others to inform support and guidance", "Ignoring the feelings of others", "Avoiding all emotional engagement", "Judging individuals based on their background"], answer:0},
+{unit:"ALL 124 - Values in FLE", q:"According to NCFR (2017), what does inclusivity emphasize?", options:["Excluding families that differ from the norm", "Focusing only on wealthy families", "Ignoring cultural differences", "Respecting the worth, dignity, potential, and uniqueness of all individuals and families"], answer:3},
+{unit:"ALL 124 - Values in FLE", q:"How can inclusivity be promoted in FLE?", options:["By using the same materials for every culture without adaptation", "By providing culturally-sensitive information and valuing diverse perspectives", "By excluding minority perspectives", "By avoiding any discussion of diversity"], answer:1},
+{unit:"ALL 124 - Values in FLE", q:"According to Hennon and Arcus (2000), what does responsibility in FLE emphasize?", options:["Taking ownership of one's actions and decisions", "Avoiding all decision-making", "Blaming others for personal failures", "Relying entirely on government intervention"], answer:0},
+{unit:"ALL 124 - Values in FLE", q:"What does the value of communication promote in FLE?", options:["Silence and avoidance of conflict", "One-way communication from educator to family", "Active listening and effective expression of emotions and needs", "Ignoring the needs of family members"], answer:2},
+{unit:"ALL 124 - Values in FLE", q:"What is family cohesion, as described in the text?", options:["The amount of money a family earns", "The physical size of a family", "The number of relatives living nearby", "The extent to which family members feel connected and share common values and beliefs"], answer:3},
+{unit:"ALL 124 - Values in FLE", q:"What is self-care, according to the FLE material?", options:["A luxury unrelated to family well-being", "Ignoring one's own needs for the sake of others", "A concept exclusive to healthcare professionals", "The practice of taking care of one's physical, emotional, and mental health"], answer:3},
+{unit:"ALL 124 - Values in FLE", q:"According to Cooper and McLoyd (2020), what can promote the well-being of individuals and families?", options:["Collaboration between families, practitioners, and community organizations", "Isolation of families from community resources", "Competition between families for limited resources", "Avoidance of all external support"], answer:0},
+{unit:"ALL 124 - Ethics in FLE", q:"What are ethics, as described in the FLE material?", options:["Legal punishments for family disputes", "Personal preferences with no professional relevance", "Standards of conduct that guide professionals in their practice", "Financial regulations for family businesses"], answer:2},
+{unit:"ALL 124 - Ethics in FLE", q:"What does confidentiality in FLE involve?", options:["Respecting the privacy of individuals and families and keeping personal information confidential", "Ignoring privacy concerns entirely", "Sharing all client information publicly", "Recording sessions without consent"], answer:0},
+{unit:"ALL 124 - Ethics in FLE", q:"According to Wampler and Tashiro (2005), what must practitioners be aware of regarding confidentiality?", options:["That confidentiality only applies to written records", "Their limits of confidentiality and situations where disclosure is necessary to prevent harm", "That confidentiality is optional", "That confidentiality never has exceptions"], answer:1},
+{unit:"ALL 124 - Ethics in FLE", q:"According to Iwuagwu and Iwelunmor (2015), why is confidentiality especially emphasized in Nigeria?", options:["Because families in Nigeria prefer public disclosure", "Because there is no cultural value placed on privacy", "Because Nigerian law prohibits all record keeping", "Due to cultural emphasis on privacy and confidentiality that helps build trust"], answer:3},
+{unit:"ALL 124 - Ethics in FLE", q:"What does informed consent in FLE involve?", options:["Withholding information about program risks", "Ensuring individuals are fully aware of a program's nature and purpose and voluntarily consent to participate", "Forcing participation without explanation", "Allowing only literate adults to consent"], answer:1},
+{unit:"ALL 124 - Ethics in FLE", q:"In Nigeria, which guidelines provide direction for obtaining informed consent in research and educational settings?", options:["The National Code of Health Research Ethics", "The Family Law Reform Act", "The National Youth Policy", "The Education Curriculum Standards Act"], answer:0},
+{unit:"ALL 124 - Ethics in FLE", q:"What do professional boundaries in FLE involve, according to Dibble and Bratcher (2019)?", options:["Maintaining appropriate relationships with individuals and families while respecting their rights and privacy", "Ignoring client privacy for convenience", "Sharing financial interests with clients", "Becoming close personal friends with all clients"], answer:0},
+{unit:"ALL 124 - Ethics in FLE", q:"According to Ogunkola and Olawale (2020), why can maintaining professional boundaries be challenging in Nigeria?", options:["Practitioners in small communities may have personal relationships or be part of the same social circle as clients", "Because Nigerian practitioners never interact with clients personally", "Because there are no ethical guidelines in Nigeria", "Because professional boundaries are illegal in Nigeria"], answer:0},
+{unit:"ALL 124 - Ethics in FLE", q:"What does avoidance of conflicts of interest require of FLE practitioners?", options:["Ignoring any potential bias in their work", "Prioritizing personal financial gain over client welfare", "Refusing to work with any client at all", "Being aware of their own biases and avoiding situations where personal interests conflict with clients' best interests"], answer:3},
+{unit:"ALL 124 - Ethics in FLE", q:"According to NCFR, what is one way to avoid conflicts of interest in FLE?", options:["Establishing clear policies and procedures for disclosing and managing potential conflicts", "Avoiding any documentation of practitioner conduct", "Allowing conflicts to go unaddressed", "Hiding all potential conflicts from clients"], answer:0},
+{unit:"ALL 124 - Meaning of Family", q:"What does the family serve as, in terms of preparing individuals for society?", options:["A structure irrelevant to child development", "An organization solely for economic production", "The primary environment where individuals are nurtured and prepared for participation in society", "A temporary institution with no lasting impact"], answer:2},
+{unit:"ALL 124 - Meaning of Family", q:"According to the text, family relationships can significantly impact what?", options:["Only international relations", "Only weather patterns", "Only national economic growth", "Physical and mental health outcomes"], answer:3},
+{unit:"ALL 124 - Content Areas of FLE", q:"Which content area addresses interpersonal relationships within the nine-area Framework?", options:["Interpersonal relationships", "Family law and public policy", "Ethics", "Family resource management"], answer:0},
+{unit:"ALL 124 - Content Areas of FLE", q:"Which content area addresses financial and resource-related matters within families?", options:["Internal dynamics of families", "Human sexuality", "Parent education and guidance", "Family resource management"], answer:3},
+{unit:"ALL 124 - FLE for Adults", q:"What outcomes are associated with parent education, according to Brock, Oertwein, and Coufal (1993)?", options:["More positive child behaviors and improved parent-child interactions", "Decreased parental involvement", "No measurable change in behavior", "Increased family conflict"], answer:0},
+{unit:"ALL 124 - FLE for Adults", q:"What special family life education needs emerge during later adulthood, according to Arcus (1993)?", options:["Needs related only to career advancement", "Needs related to health changes, loss of significant others, and changes in work roles", "No special needs arise in later life", "Needs related only to travel planning"], answer:1},
+{unit:"ALL 124 - Purpose of FLE", q:"What is one objective of FLE regarding wise decision-making?", options:["Avoiding all decision-making responsibilities", "Ignoring community relationships entirely", "Developing life skills to communicate effectively and make wise decisions about family matters", "Relying solely on others to make decisions"], answer:2},
+{unit:"ALL 124 - Values in FLE", q:"What environment does empathy help foster in FLE, according to the text?", options:["A safe and supportive learning environment where individuals share experiences", "A hostile and judgmental environment", "An environment with no room for personal expression", "An environment focused only on competition"], answer:0},
+{unit:"ALL 124 - Ethics in FLE", q:"Confidentiality promotes what, according to the text?", options:["Isolation of clients from support systems", "Trust, openness, and a safe learning environment for individuals and families", "Legal liability for practitioners", "Secrecy that prevents all communication"], answer:1},
+{unit:"ALL 124 - Meaning of FLE", q:"What does FLE aim to help individuals and families do regarding challenges?", options:["Develop the skills and knowledge needed to navigate the challenges of family life", "Rely solely on legal intervention for every challenge", "Ignore challenges until they resolve themselves", "Avoid all challenges by isolating from society"], answer:0},
+];
+
+const COURSES = [
+  {code:"EDT 118", name:"", questions: EDT118_QUESTIONS},
+  {code:"ECO 102", name:"", questions: ECO102_QUESTIONS},
+  {code:"ETL 114", name:"", questions: ETL114_QUESTIONS},
+  {code:"GST 112", name:"", questions: GST112_QUESTIONS},
+  {code:"ALL 124", name:"", questions: ALL124_QUESTIONS},
+  {code:"EDU 102", name:"", questions: null},
+  {code:"ECO 104", name:"", questions: null},
+  {code:"LIB 002", name:"", questions: null},
+  {code:"ALL 126", name:"", questions: null},
+  {code:"EDT 120", name:"", questions: null}
+];
+
+const SESSION_SIZE = 20;
+const TIME_LIMIT_SECONDS = 600; // 10 minutes
+
+const courseScreen = document.getElementById('course-screen');
+const courseList = document.getElementById('course-list');
+const lockedMsg = document.getElementById('locked-msg');
+const quizScreen = document.getElementById('quiz-screen');
+const pageTitle = document.getElementById('page-title');
+const pageSub = document.getElementById('page-sub');
+const changeCourseBtn = document.getElementById('change-course-btn');
+const submitMidBtn = document.getElementById('submit-mid-btn');
+
+const form = document.getElementById('quiz-form');
+const answeredCountEl = document.getElementById('answered-count');
+const totalCountEl = document.getElementById('total-count');
+const liveScoreEl = document.getElementById('live-score');
+const resultEl = document.getElementById('result');
+const timerValueEl = document.getElementById('timer-value');
+const timerDisplayEl = document.getElementById('timer-display');
+const prevBtn = document.getElementById('prev-btn');
+const nextBtn = document.getElementById('next-btn');
+const navRow = document.getElementById('nav-row');
+const submitRow = document.getElementById('submit-row');
+const resetBtn = document.getElementById('reset-btn');
+const progressText = document.getElementById('progress-text');
+const progressFill = document.getElementById('progress-fill');
+
+let activeCourse = null;
+let sessionQuestions = [];
+let answers = [];
+let currentIndex = 0;
+let timerInterval = null;
+let secondsLeft = TIME_LIMIT_SECONDS;
+let graded = false;
+
+function renderCourseList(){
+  courseList.innerHTML = '';
+  COURSES.forEach(course => {
+    const open = !!course.questions;
+    const card = document.createElement('div');
+    card.className = 'course-card ' + (open ? 'open' : 'locked');
+    card.innerHTML = `
+      <span class="code">${course.code}${course.name ? ' — ' + course.name : ''}</span>
+      <span class="status">${open ? 'Available' : 'Locked'}</span>
+    `;
+    card.addEventListener('click', () => {
+      if (open){
+        lockedMsg.style.display = 'none';
+        startCourse(course);
+      } else {
+        lockedMsg.style.display = 'block';
+      }
+    });
+    courseList.appendChild(card);
+  });
+}
+
+function startCourse(course){
+  activeCourse = course;
+  document.getElementById('active-course-label').textContent = course.code;
+  courseScreen.style.display = 'none';
+  quizScreen.style.display = 'block';
+  graded = false;
+  resultEl.style.display = 'none';
+  navRow.style.display = 'flex';
+  submitRow.style.display = 'none';
+  progressText.style.display = 'block';
+  progressFill.parentElement.style.display = 'block';
+  liveScoreEl.textContent = '—';
+  pickSession();
+  renderQuestion();
+  startTimer();
+}
+
+changeCourseBtn.addEventListener('click', () => {
+  clearInterval(timerInterval);
+  quizScreen.style.display = 'none';
+  courseScreen.style.display = 'block';
+});
+
+function shuffle(arr){
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function pickSession(){
+  sessionQuestions = shuffle(activeCourse.questions).slice(0, SESSION_SIZE);
+  answers = new Array(sessionQuestions.length).fill(null);
+  currentIndex = 0;
+  totalCountEl.textContent = sessionQuestions.length;
+}
+
+function updateAnsweredCount(){
+  const answered = answers.filter(a => a !== null).length;
+  answeredCountEl.textContent = answered;
+}
+
+function updateProgress(){
+  progressText.textContent = 'Question ' + (currentIndex + 1) + ' of ' + sessionQuestions.length;
+  progressFill.style.width = Math.round(((currentIndex + 1) / sessionQuestions.length) * 100) + '%';
+  prevBtn.disabled = currentIndex === 0;
+  nextBtn.disabled = currentIndex === sessionQuestions.length - 1;
+}
+
+function renderQuestion(){
+  const item = sessionQuestions[currentIndex];
+  form.innerHTML = '';
+
+  const div = document.createElement('div');
+  div.className = 'q';
+
+  const unitTag = document.createElement('div');
+  unitTag.className = 'q-unit';
+  unitTag.textContent = item.unit;
+  div.appendChild(unitTag);
+
+  const qText = document.createElement('div');
+  qText.className = 'q-text';
+  qText.textContent = item.q;
+  div.appendChild(qText);
+
+  item.options.forEach((opt, oi) => {
+    const label = document.createElement('label');
+    label.className = 'opt';
+    const checkedAttr = answers[currentIndex] === oi ? 'checked' : '';
+    label.innerHTML = `<input type="radio" name="current-q" value="${oi}" ${checkedAttr}> ${opt}`;
+    label.querySelector('input').addEventListener('change', () => {
+      answers[currentIndex] = oi;
+      updateAnsweredCount();
+    });
+    div.appendChild(label);
+  });
+
+  form.appendChild(div);
+  updateProgress();
+}
+
+prevBtn.addEventListener('click', () => {
+  if (currentIndex > 0){
+    currentIndex--;
+    renderQuestion();
+  }
+});
+
+nextBtn.addEventListener('click', () => {
+  if (currentIndex < sessionQuestions.length - 1){
+    currentIndex++;
+    renderQuestion();
+  }
+});
+
+submitMidBtn.addEventListener('click', () => gradeQuiz(false));
+
+function formatTime(s){
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return m + ':' + String(sec).padStart(2, '0');
+}
+
+function startTimer(){
+  clearInterval(timerInterval);
+  secondsLeft = TIME_LIMIT_SECONDS;
+  timerDisplayEl.classList.remove('low');
+  timerValueEl.textContent = formatTime(secondsLeft);
+
+  timerInterval = setInterval(() => {
+    secondsLeft--;
+    timerValueEl.textContent = formatTime(Math.max(secondsLeft, 0));
+    if (secondsLeft <= 60) timerDisplayEl.classList.add('low');
+    if (secondsLeft <= 0){
+      clearInterval(timerInterval);
+      if (!graded) gradeQuiz(true);
+    }
+  }, 1000);
+}
+
+function gradeQuiz(timedOut){
+  if (graded) return;
+  graded = true;
+  clearInterval(timerInterval);
+
+  let score = 0;
+  sessionQuestions.forEach((item, qi) => {
+    if (answers[qi] === item.answer) score++;
+  });
+
+  liveScoreEl.textContent = score + ' / ' + sessionQuestions.length;
+  const pct = Math.round((score / sessionQuestions.length) * 100);
+
+  navRow.style.display = 'none';
+  submitRow.style.display = 'block';
+  progressText.style.display = 'none';
+  progressFill.parentElement.style.display = 'none';
+
+  form.innerHTML = '';
+  sessionQuestions.forEach((item, qi) => {
+    const div = document.createElement('div');
+    div.className = 'q';
+
+    const unitTag = document.createElement('div');
+    unitTag.className = 'q-unit';
+    unitTag.textContent = item.unit + ' · Question ' + (qi + 1);
+    div.appendChild(unitTag);
+
+    const qText = document.createElement('div');
+    qText.className = 'q-text';
+    qText.textContent = item.q;
+    div.appendChild(qText);
+
+    item.options.forEach((opt, oi) => {
+      const label = document.createElement('label');
+      label.className = 'opt';
+      if (oi === item.answer) label.classList.add('correct');
+      else if (oi === answers[qi]) label.classList.add('incorrect');
+      label.innerHTML = `<input type="radio" disabled ${oi === answers[qi] ? 'checked' : ''}> ${opt}`;
+      div.appendChild(label);
+    });
+
+    form.appendChild(div);
+  });
+
+  resultEl.style.display = 'block';
+  const timeoutNote = timedOut ? ' — time ran out' : '';
+  resultEl.innerHTML = `<strong style="font-size:1.3rem;">You scored ${score} / ${sessionQuestions.length} (${pct}%)${timeoutNote}</strong>`;
+  resultEl.scrollIntoView({behavior:'smooth'});
+}
+
+resetBtn.addEventListener('click', () => {
+  startCourse(activeCourse);
+});
+
+renderCourseList();
+</script>
+
+</body>
+</html>
