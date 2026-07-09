@@ -1,0 +1,23 @@
+{
+  "name": "hashquiz-study-assistant",
+  "version": "1.0.0",
+  "description": "AI-powered study assistant for HashQuiz using xAI",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "vercel build",
+    "deploy": "vercel deploy --prod"
+  },
+  "keywords": [
+    "study",
+    "assistant",
+    "ai",
+    "xai",
+    "hashquiz"
+  ],
+  "author": "HashQuiz",
+  "license": "MIT",
+  "engines": {
+    "node": "18.x"
+  }
+}
